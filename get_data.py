@@ -109,3 +109,6 @@ print(
 [-120.3264300, 39.3160260],
 """
 # so there's def some clever compression opportunity (will have to decrypt on the client side but that should be easy enough)
+# See here:
+# https://stackoverflow.com/questions/20912901/lossless-compression-for-coordinate-path-data
+
