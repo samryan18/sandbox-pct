@@ -1,5 +1,3 @@
-# quick notebook code for getting data
-
 from datetime import datetime, timedelta
 import logging
 import sys
@@ -7,108 +5,70 @@ import sys
 from stravalib.client import Client
 
 # get strava developer creds and fill out your data
-ACCESS_TOKEN = "123"
-MY_STRAVA_CLIENT_SECRET = "123"
-MY_STRAVA_CLIENT_ID = 123
+ACCESS_TOKEN = "e2d8239cc53559201048c2c63800c600a81cd446"
+MY_STRAVA_CLIENT_SECRET = "8f1e2fe2189e9dd296e73193f5f6285a2c63cca4"
+MY_STRAVA_CLIENT_ID = 43164
 
 client = Client(access_token=ACCESS_TOKEN)
 
-url = client.authorization_url(client_id=MY_STRAVA_CLIENT_ID,
-                               redirect_uri='http://127.0.0.1:5000/authorization')
+url = client.authorization_url(
+    client_id=MY_STRAVA_CLIENT_ID,
+    redirect_uri='http://localhost:8888/authorized',
+    scope='activity:read_all'
+)
+
 
 # follow this url and grab the code it gives you
 print(url)
 
 
 # new cell
-code = "GRAB THE CODE FROM THE URL REDIRECT ABOVE"
+code = "205050c15b270c7bc403f1da80d7ff8ad55727cb"
 access_token = client.exchange_code_for_token(client_id=MY_STRAVA_CLIENT_ID,
                                               client_secret=MY_STRAVA_CLIENT_SECRET,
                                               code=code)
+start_date = datetime.strptime("04/20/2021", "%m/%d/%Y")
+end_date = datetime.strptime("08/24/2021", "%m/%d/%Y")
 
-activity_id = 123 # any activity (you can easily get a list of recents from client)
-activity = client.get_activity(activity_id).to_dict()
+activities = client.get_activities(before=end_date, after=start_date)
+activities = [a for a in activities if a.type=="Hike"]
 
-types = ['time', 'latlng']
-stream = client.get_activity_streams(activity_id, types=types)
-print(activity["type"])
+from tqdm.notebook import tqdm
+import warnings
+warnings.filterwarnings("ignore")
+activity_details = []
 
-shoes = activity["gear"]["name"]
-elapsed_time = activity["elapsed_time"]
-moving_time = activity["moving_time"]
-distance_miles = activity["distance"] * 0.000621371 # meters to miles
-average_heartrate = activity["average_heartrate"]
-max_heartrate = activity["max_heartrate"]
-start_date_local = datetime.strptime(activity["start_date_local"], "%Y-%m-%dT%H:%M:%S")
-name = activity["name"]
-description = activity["description"]
-calories = activity["calories"]
+for a in tqdm(activities):
+    activity = client.get_activity(a.id).to_dict()
 
-print(f"""
-shoes:\t\t\t{shoes}
-elapsed_time:\t\t{elapsed_time}
-moving_time:\t\t{moving_time}
-distance_miles:\t\t{distance_miles}
-average_heartrate:\t{average_heartrate}
-max_heartrate:\t\t{max_heartrate}
-start_date_local:\t{start_date_local}
-name:\t\t\t{name}
-description:\t\t{description}
-calories:\t\t{calories}
-""")
+    types = ['time', 'latlng']
+    stream = client.get_activity_streams(a.id, types=types)
+    
+    # Extract latlng and time information from activity stream
+    latlng = stream['latlng'].data
+    lnglat = [[b,a] for a,b in latlng] # format for mapbox
+    time = stream['time'].data # not used right now
 
-# Extract latlng and time information from activity stream
-latlng = stream['latlng'].data
-lnglat = [[b,a] for a,b in latlng] # format for mapbox
-time = stream['time'].data # not used right now
-
-activity_details = {
-    "shoes": shoes,
-    "elapsed_time": elapsed_time,
-    "moving_time": moving_time,
-    "distance_miles": distance_miles,
-    "average_heartrate": average_heartrate,
-    "max_heartrate": max_heartrate,
-    "start_date_local": start_date_local,
-    "name": name,
-    "description": description,
-    "calories": calories,
-    "lnglat": lnglat
-}
+    activity_details.append({
+        "elapsed_time": activity["elapsed_time"],
+        "pace": activity["average_speed"]*26.8224,
+        "moving_time": activity["moving_time"],
+        "distance_miles": activity["distance"] * 0.000621371, # meters to miles,
+        "average_heartrate": activity["average_heartrate"],
+        "max_heartrate": activity["max_heartrate"],
+        "start_date_local": str(datetime.strptime(activity["start_date_local"], "%Y-%m-%dT%H:%M:%S")),
+        "name": activity["name"],
+        "shoes": activity["gear"]["name"],
+        "vert_feet": activity["total_elevation_gain"]*3.28084, # meters to feet
+        "description": activity["description"],
+        "calories": activity["calories"],
+        "lnglat": lnglat[::5] # every 5 measurements (seconds)
+    })
 
 print(
     "The size of the activity_details is "
     f"{(sys.getsizeof(activity_details)+sys.getsizeof(lnglat))/1000} kilobytes"
 )
-# for an all day hike from the Winds, this returned:
-# The size of the activity_details is 125.568 kilobytes
-# Not too bad...can down sample to 10 seconds and get to ~25KB/activity (assuming double the length of our winds trips)
-# That puts us at a few MB for the whole PCT (about the same as loading an image)
 
-# Also the data looks like this:
-"""
-[-120.3266510, 39.3157780],
-[-120.3266430, 39.3157920],
-[-120.3266310, 39.3158100],
-[-120.3266190, 39.3158250],
-[-120.3266070, 39.3158400],
-[-120.3265930, 39.3158520],
-[-120.3265810, 39.3158620],
-[-120.3265680, 39.3158780],
-[-120.3265550, 39.3158930],
-[-120.3265390, 39.3159110],
-[-120.3265270, 39.3159220],
-[-120.3265180, 39.3159320],
-[-120.3265090, 39.3159470],
-[-120.3264990, 39.3159570],
-[-120.3264860, 39.3159660],
-[-120.3264760, 39.3159740],
-[-120.3264650, 39.3159880],
-[-120.3264540, 39.3160000],
-[-120.3264430, 39.3160120],
-[-120.3264300, 39.3160260],
-"""
-# so there's def some clever compression opportunity (will have to decrypt on the client side but that should be easy enough)
-# See here:
-# https://stackoverflow.com/questions/20912901/lossless-compression-for-coordinate-path-data
-
+with open("data.js", "w") as file1:
+    file1.write(f"let coordinates ={str(activity_details)}")
