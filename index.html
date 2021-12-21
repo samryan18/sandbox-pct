@@ -9,29 +9,101 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
 <style>
-body { margin: 0; padding: 0; }
+body { margin: 0; padding: 0; height:100%; }
+/* #map { position: absolute; top: 0; bottom: 0; width: 100%; } */
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+.mapboxgl-popup {
+    overflow-y: scroll ! important;
+    max-height: 40% ! important;
+    width: 100%;
+    opacity: 0.9;
+    background-color: white;
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+#popup {
+    overflow-y: scroll ! important;
+    position: absolute;
+    background: white;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    opacity: .7;
+}
+#popup:hover {
+
+    opacity: 1.0;
+}
+
+
+/* ::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} */
+ 
+#title {
+    position: absolute;
+    background: #efefef;
+    padding: 10px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+
 </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="title">PCT by SLR
+
+<br><br><button id="toggle">Hide Bottom Popup</button>
+
+</div>
+<div id="popup">
+
+    <p>Click a section of the route to see summary!</p>
+    <br> <br>
+</div>
+
+
+
+
 <script src="data.js"></script>
 <script>
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
 var map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [-120.2849630, 39.245],
-    zoom: 5
+    // style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/mapbox/outdoors-v11',
+    center: [-115.2849630, 40.245],
+    zoom: 4
 });
 
 map.on('load', function () {
     coordinates.forEach(function(d, i) {
         let id = `route${i}`
         let name = d["name"]
-        d["pace"] = 18.253
         let pace = d["pace"]
-        pace = Math.floor(pace).toString() + ":" + (60*(pace % 1)).toFixed(0)
+        let seconds = ((60*(pace % 1)).toFixed(0)).toString()
+        if (seconds.length == 1) {
+            seconds = "0" + seconds
+        }
+
+        pace = Math.floor(pace).toString() + ":" + seconds
+
         map.addSource(id, {
             'type': 'geojson',
             'data': {
@@ -42,8 +114,9 @@ map.on('load', function () {
                     +`<br>Distance: ${d["distance_miles"].toFixed(2)} miles`
                     +`<br>Pace: ${pace} min/mile`
                     +`<br>Vert: ${d["vert_feet"].toFixed(0)} ft.`
+                    +`<br>Calories: ${d["calories"]} cals`
                     +`<br>Shoes: ${d["shoes"]}`
-                    +`<p>${d["description"]}</p>`
+                    +`<p>${d["description"]}</p><br>`
                 },
                 'geometry': {
                     'type': 'LineString',
@@ -51,6 +124,17 @@ map.on('load', function () {
                 }
             }
         });
+
+        // const marker1 = new mapboxgl.Marker(
+        //     { color: 'black', scale: 0.5 }
+        //     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#marker-parameters
+        // )
+        //     .setLngLat(d["lnglat"][
+        //         Math.floor((0 + d["lnglat"].length)/2)
+        //     ])
+        //     .addTo(map);
+
+
         if (i % 2 == 0) {
             line_color = "#456"
         } else {
@@ -73,8 +157,11 @@ map.on('load', function () {
 
     // Create a popup, but don't add it to the map yet.
     var popup = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false
+        closeButton: true,
+        closeOnClick: true,
+        offset: 25,
+        autoPan: false,
+        className: "mypopup"
     });
     function mouseOverFunc(e) {
 
@@ -95,17 +182,31 @@ map.on('load', function () {
         
         // Populate the popup and set its coordinates
         // based on the feature found.
-        popup.setLngLat(coordinates[0]).setHTML(description).addTo(map);
+        // popup
+        //     .setLngLat(coordinates[0])
+        //     .setHTML(description)
+        //     .addTo(map);
+
+		document.getElementById("popup").innerHTML = description;
 
     };
     coordinates.forEach(function(_, i) {
-        map.on('mouseenter', 'route'+i, mouseOverFunc);
+        map.on('mouseenter', 'route'+i, function() {
+            map.getCanvas().style.cursor = 'pointer';
+        })
+        map.on('click', 'route'+i, mouseOverFunc);
         map.on('mouseleave', 'route'+i, function () {
             map.getCanvas().style.cursor = '';
+            // document.getElementById("popup").innerHTML = "";
             popup.remove();
         });	
 
     });
+
+    const btn = document.getElementById("toggle");
+    btn.onclick = function () {
+        document.getElementById("popup").innerHTML = "";
+    };
 
 
 });
