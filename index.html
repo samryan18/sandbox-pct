@@ -3,9 +3,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>PCT by SLR</title>
 <meta charset="utf-8">
-<title>PCT Sandbox</title>
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no, width=device-width">
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
 <style>
@@ -30,11 +35,12 @@ body { margin: 0; padding: 0; height:100%; }
     overflow: scroll;
     position: absolute;
     background: white;
+    max-height: 70%;
     bottom: 0;
     left: 0;
     box-sizing: border-box;
     padding-bottom: 35px;
-    padding-top: 0px;
+    padding-top: 20px;
     padding-right: 20px;
     padding-left: 20px;
     width: 100%;
@@ -59,11 +65,17 @@ body { margin: 0; padding: 0; height:100%; }
 <div id="title">PCT by SLR
 </div>
 <div id="popup">
+    <div class="card" style="width: 100%;">
+        <div class="row no-gutters">
 
-    <p>Hover over a section of the route to see summary!</p>
-    <button id="toggle">Hide Bottom Popup</button>
-
-    <br> <br>
+            <div class="col-sm-7">
+                <div class="card-body">
+                    <p class="card-text">Hover over a section of the route to see summary!</p>
+                    <button class="btn btn-primary" id="toggle">Hide Bottom Popup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="data.js"></script>
@@ -94,16 +106,31 @@ map.on('load', function () {
             'data': {
                 'type': 'Feature',
                 'properties': {
-                    'description':
-                    `<h3>${name}</h3>`
-                    +`<strong>Distance:</strong> ${d["distance_miles"].toFixed(2)} miles`
-                    +`<br><strong>Pace:</strong> ${pace} min/mile`
-                    +`<br><strong>Vert:</strong> ${d["vert_feet"].toFixed(0)} ft.`
-                    +`<br><strong>Calories:</strong> ${d["calories"]} cals`
-                    +`<br><strong>Shoes:</strong> ${d["shoes"]}`
-                    +`<p>${d["description"]}</p>`
-                    +`<button id="toggle">Hide Bottom Popup</button>
-`
+                    'description': `
+                    <div class="card" style="width: 100%;">
+                        <div class="row no-gutters">
+                            <div class="col-sm-5">
+                                <img class="card-img" style="height: 100%" src="${d["photo_url"]}" alt="Photo">
+                            </div>
+                            <div class="col-sm-7">
+                                <div class="card-body">
+                                    <h5 class="card-title">${name}</h5>
+                                    <div class="card-text">
+                                        
+                                        <strong>Distance:</strong> ${d["distance_miles"].toFixed(2)} miles
+                                        <br><strong>Pace:</strong> ${pace} min/mile
+                                        <br><strong>Vert:</strong> ${d["vert_feet"].toFixed(0)} ft.
+                                        <br><strong>Calories:</strong> ${d["calories"]} cals
+                                        <br><strong>Shoes:</strong> ${d["shoes"]}
+                                        <p>${d["description"]}</p>
+                                                                                
+                                    </div>
+                                    <button class="btn btn-primary" id="toggle">Hide This Popup</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `
                 },
                 'geometry': {
                     'type': 'LineString',
