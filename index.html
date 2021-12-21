@@ -10,7 +10,6 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
 <style>
 body { margin: 0; padding: 0; height:100%; }
-/* #map { position: absolute; top: 0; bottom: 0; width: 100%; } */
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 .mapboxgl-popup {
     overflow-y: scroll ! important;
@@ -40,20 +39,6 @@ body { margin: 0; padding: 0; height:100%; }
 
     opacity: 1.0;
 }
-
-
-/* ::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #888;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-} */
  
 #title {
     position: absolute;
@@ -61,7 +46,6 @@ body { margin: 0; padding: 0; height:100%; }
     padding: 10px;
     font-family: 'Open Sans', sans-serif;
 }
-
 
 </style>
 </head>
@@ -77,9 +61,6 @@ body { margin: 0; padding: 0; height:100%; }
     <p>Hover over a section of the route to see summary!</p>
     <br> <br>
 </div>
-
-
-
 
 <script src="data.js"></script>
 <script>
@@ -213,9 +194,7 @@ map.on('load', function () {
     if (mobile) {
         alert("Looks like you're on a mobile device! This will look better in a computer browser :)");              
     }
-
 });
-
 </script>
  
 </body>
