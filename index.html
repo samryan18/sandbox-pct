@@ -27,16 +27,21 @@ body { margin: 0; padding: 0; height:100%; }
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 #popup {
-    overflow-y: scroll ! important;
+    overflow: scroll;
     position: absolute;
     background: white;
     bottom: 0;
     left: 0;
+    box-sizing: border-box;
+    padding-bottom: 35px;
+    padding-top: 0px;
+    padding-right: 20px;
+    padding-left: 20px;
     width: 100%;
     opacity: 1.0;
 }
-#popup:hover {
 
+#popup:hover {
     opacity: 1.0;
 }
  
@@ -52,13 +57,12 @@ body { margin: 0; padding: 0; height:100%; }
 <body>
 <div id="map"></div>
 <div id="title">PCT by SLR
-
-<br><br><button id="toggle">Hide Bottom Popup</button>
-
 </div>
 <div id="popup">
 
     <p>Hover over a section of the route to see summary!</p>
+    <button id="toggle">Hide Bottom Popup</button>
+
     <br> <br>
 </div>
 
@@ -91,13 +95,15 @@ map.on('load', function () {
                 'type': 'Feature',
                 'properties': {
                     'description':
-                    `<strong>${name}</strong><br>`
-                    +`<br>Distance: ${d["distance_miles"].toFixed(2)} miles`
-                    +`<br>Pace: ${pace} min/mile`
-                    +`<br>Vert: ${d["vert_feet"].toFixed(0)} ft.`
-                    +`<br>Calories: ${d["calories"]} cals`
-                    +`<br>Shoes: ${d["shoes"]}`
-                    +`<p>${d["description"]}</p><br>`
+                    `<h3>${name}</h3>`
+                    +`<strong>Distance:</strong> ${d["distance_miles"].toFixed(2)} miles`
+                    +`<br><strong>Pace:</strong> ${pace} min/mile`
+                    +`<br><strong>Vert:</strong> ${d["vert_feet"].toFixed(0)} ft.`
+                    +`<br><strong>Calories:</strong> ${d["calories"]} cals`
+                    +`<br><strong>Shoes:</strong> ${d["shoes"]}`
+                    +`<p>${d["description"]}</p>`
+                    +`<button id="toggle">Hide Bottom Popup</button>
+`
                 },
                 'geometry': {
                     'type': 'LineString',
@@ -169,6 +175,9 @@ map.on('load', function () {
         //     .addTo(map);
 
 		document.getElementById("popup").innerHTML = description;
+        document.getElementById("toggle").onclick = function () {
+            document.getElementById("popup").innerHTML = "";
+        };
 
     };
     coordinates.forEach(function(_, i) {
@@ -185,8 +194,8 @@ map.on('load', function () {
 
     });
 
-    const btn = document.getElementById("toggle");
-    btn.onclick = function () {
+
+    document.getElementById("toggle").onclick = function () {
         document.getElementById("popup").innerHTML = "";
     };
 
