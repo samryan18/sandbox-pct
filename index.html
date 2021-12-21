@@ -209,6 +209,10 @@ map.on('load', function () {
         document.getElementById("popup").innerHTML = "";
     };
 
+    var mobile = (/iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase()));
+    if (mobile) {
+        alert("Looks like you're on a mobile device! This will look better in a computer browser :)");              
+    }
 
 });
 
