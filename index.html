@@ -74,7 +74,7 @@ body { margin: 0; padding: 0; height:100%; }
 </div>
 <div id="popup">
 
-    <p>Click a section of the route to see summary!</p>
+    <p>Hover over a section of the route to see summary!</p>
     <br> <br>
 </div>
 
@@ -191,10 +191,11 @@ map.on('load', function () {
 
     };
     coordinates.forEach(function(_, i) {
-        map.on('mouseenter', 'route'+i, function() {
+        map.on('mouseenter', 'route'+i, function(e) {
             map.getCanvas().style.cursor = 'pointer';
+            mouseOverFunc(e)
         })
-        map.on('click', 'route'+i, mouseOverFunc);
+        // map.on('click', 'route'+i, mouseOverFunc);
         map.on('mouseleave', 'route'+i, function () {
             map.getCanvas().style.cursor = '';
             // document.getElementById("popup").innerHTML = "";
