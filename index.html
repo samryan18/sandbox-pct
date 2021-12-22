@@ -81,7 +81,6 @@ body { margin: 0; padding: 0; }
             if (i < init_coordinates.length) {
                 data.features[0].geometry.coordinates.push(init_coordinates[i]);
                 map.getSource('trace').setData(data);
-                console.log(init_coordinates[i][1])
                 map.panTo([init_coordinates[i][0], init_coordinates[i][1]]);
                 i++;
             } else {
