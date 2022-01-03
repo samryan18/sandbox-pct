@@ -5,9 +5,9 @@ import sys
 from stravalib.client import Client
 
 # get strava developer creds and fill out your data
-ACCESS_TOKEN = "e2d8239cc53559201048c2c63800c600a81cd446"
-MY_STRAVA_CLIENT_SECRET = "8f1e2fe2189e9dd296e73193f5f6285a2c63cca4"
-MY_STRAVA_CLIENT_ID = 43164
+ACCESS_TOKEN = "xyz"
+MY_STRAVA_CLIENT_SECRET = "xyz"
+MY_STRAVA_CLIENT_ID = 123
 
 client = Client(access_token=ACCESS_TOKEN)
 
