@@ -1,94 +1,248 @@
+<!-- JUST PLAYING AROUND - FORGIVE THE FORMATTING :) -->
+
 <!DOCTYPE html>
 <html>
 <head>
+<title>PCT by SLR</title>
 <meta charset="utf-8">
-<title>PCT REALTIME</title>
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no, width=device-width">
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
 <style>
-body { margin: 0; padding: 0; }
+body { margin: 0; padding: 0; height:100%; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+.mapboxgl-popup {
+    overflow-y: scroll ! important;
+    max-height: 40% ! important;
+    width: 100%;
+    opacity: 0.9;
+    background-color: white;
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+#popup {
+    overflow-y: scroll;
+    position: absolute;
+    background: white;
+    height: 100%;
+    width: 30%;
+    left: 70%;
+    box-sizing: border-box;
+    opacity: 1.0;
+}
+
+#popup:hover {
+    opacity: 1.0;
+}
+ 
+#title {
+    position: absolute;
+    background: #efefef;
+    padding: 10px;
+    font-family: 'Open Sans', sans-serif;
+}
+
 </style>
 </head>
 <body>
+
 <div id="map"></div>
+<div id="title">PCT by SLR - 
+    <input id="satellite-v9" type="radio" name="rtoggle" value="satellite" checked="checked">
+    <label for="satellite-v9">daily</label>
+    <input id="light-v10" type="radio" name="rtoggle" value="light" onclick="window.location='index3.html';">
+    <label for="light-v10">route</label>
+</div>
+
+<div id="popup">
+    <div class="card border-0" style="width: 96%; position: absolute; left: 2%; top: 1%;">
+        <div class="row no-gutters">
+            <div class="col-sm-12">
+                <div class="card-body">
+                    <h5 class="card-title">About</h5>
+                    <p class="card-text">
+                        Hello. I'm Sam. I hiked the PCT in 2021.
+                    </p>
+                    <p class="card-text">
+                        Here is my route GPS (tracked on a Garmin watch). Each color change is a different day of hiking. Hover over any of them to see info.
+                    </p>
+                    <!-- <button class="btn btn-primary" id="toggle">Hide Bottom Popup</button> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="data.js"></script>
-
 <script>
-	// TO MAKE THE MAP APPEAR YOU MUST
-	// ADD YOUR ACCESS TOKEN FROM
-	// https://account.mapbox.com
-    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
+mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/outdoors-v11',
+    center: [-115.2849630, 40.245],
+    zoom: 4
+});
 
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/outdoors-v11',
-        zoom: 0
-    });
-    let lnglat_orig = []
-    coordinates.forEach(function(c) {
-        lnglat_orig = lnglat_orig.concat(c["lnglat"])
-    });
-    let lnglat = []
-    for (i = 0; i < lnglat_orig.length; i=i+20) {
-        lnglat.push(lnglat_orig[i]);
-    }
-    console.log(lnglat)
-    // https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/
-    map.on('load', async () => {
-
-        
-
-        const data = {
-            'type': "FeatureCollection",
-            'features': [{
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'LineString',
-                    'properties': {},
-                    'coordinates': lnglat
-                }
-            }]
-            
+map.on('load', function () {
+    coordinates.forEach(function(d, i) {
+        let id = `route${i}`
+        let name = d["name"]
+        let pace = d["pace"]
+        let seconds = ((60*(pace % 1)).toFixed(0)).toString()
+        if (seconds.length == 1) {
+            seconds = "0" + seconds
         }
 
-        const init_coordinates = data.features[0].geometry.coordinates;
-        data.features[0].geometry.coordinates = [init_coordinates[0]];
-
-        map.addSource('trace', { type: 'geojson', data: data });
-
-        // add it to the map
-        map.addLayer({
-            'id': 'trace',
-            'type': 'line',
-            'source': 'trace',
-            'paint': {
-                'line-color': 'blue',
-                'line-opacity': 0.75,
-                'line-width': 5
+        pace = Math.floor(pace).toString() + ":" + seconds
+        map.addSource(id, {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {
+                    'description': `
+                    <div class="card border-0" style="width: 96%; position: absolute; left: 2%; top: 1%;">
+                        <div class="row no-gutters">
+                            <div  style="padding-left: 1%" class="col-12">
+                                <img class="card-img" style="width: 100%" src="${d["photo_url"]}" alt="No primary photo today!">
+                            </div>
+                            <div class="col-12">
+                                <div class="card-body">
+                                    <h5 class="card-title">${name}</h5>
+                                    <div class="card-text">
+                                        <strong>Distance:</strong> ${d["distance_miles"].toFixed(2)} miles
+                                        <br><strong>Pace:</strong> ${pace} min/mile
+                                        <br><strong>Vert:</strong> ${d["vert_feet"].toFixed(0)} ft.
+                                        <br><strong>Calories:</strong> ${d["calories"]} cals
+                                        <br><strong>Shoes:</strong> ${d["shoes"]}
+                                        <p>${d["description"].replace('\n', '<br>')}</p>
+                                                                                
+                                    </div>
+  
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `
+                },
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': d["lnglat"],
+                }
             }
         });
 
-        // setup the viewport
-        console.log(init_coordinates[0])
-        map.jumpTo({ 'center': init_coordinates[0], 'zoom': 12 });
-        map.setPitch(30);
+        // const marker1 = new mapboxgl.Marker(
+        //     { color: 'black', scale: 0.5 }
+        //     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#marker-parameters
+        // )
+        //     .setLngLat(d["lnglat"][
+        //         Math.floor((0 + d["lnglat"].length)/2)
+        //     ])
+        //     .addTo(map);
 
-        // on a regular basis, add more coordinates from the saved list and update the map
-        let i = 0;
-        const timer = setInterval(() => {
-            if (i < init_coordinates.length) {
-                data.features[0].geometry.coordinates.push(init_coordinates[i]);
-                map.getSource('trace').setData(data);
-                map.panTo([init_coordinates[i][0], init_coordinates[i][1]]);
-                i++;
-            } else {
-                window.clearInterval(timer);
+
+        if (i % 2 == 0) {
+            line_color = "#456"
+        } else {
+            line_color = "#89F"
+        }
+        map.addLayer({
+                'id': id,
+                'type': 'line',
+                'source': id,
+                'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': line_color,
+                'line-width': 7
             }
-        }, 20);
+        });
     });
-</script>
 
+    // Create a popup, but don't add it to the map yet.
+    var popup = new mapboxgl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        offset: 25,
+        autoPan: false,
+        className: "mypopup"
+    });
+    function mouseOverFunc(e) {
+
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+        
+        var coordinates = e.features[0].geometry.coordinates.slice();
+        var description = e.features[0].properties.description;
+        // console.log(description)
+        // console.log(coordinates)
+        
+        // Ensure that if the map is zoomed out such that multiple
+        // copies of the feature are visible, the popup appears
+        // over the copy being pointed to.
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+        // EXPERIMENTAL:
+        // console.log(e.features[0].layer.paint["line-color"])
+        // e.features[0].layer.paint["line-color"]="#F00"
+        // e.features[0].layer.setPaintProperty('line-color', "#F00");
+        // console.log(e.features[0].layer.paint["line-color"])
+        
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        // popup
+        //     .setLngLat(coordinates[0])
+        //     .setHTML(description)
+        //     .addTo(map);
+
+		document.getElementById("popup").innerHTML = description;
+        // document.getElementById("toggle").onclick = function () {
+        //     document.getElementById("popup").innerHTML = "";
+        // };
+
+    };
+    coordinates.forEach(function(_, i) {
+        map.on('mouseenter', 'route'+i, function(e) {
+            map.getCanvas().style.cursor = 'pointer';
+            mouseOverFunc(e)
+        })
+        // map.on('click', 'route'+i, mouseOverFunc);
+        map.on('mouseleave', 'route'+i, function () {
+            map.getCanvas().style.cursor = '';
+            // document.getElementById("popup").innerHTML = "";
+            popup.remove();
+        });	
+
+    });
+
+    // document.getElementById("toggle").onclick = function () {
+    //     document.getElementById("popup").innerHTML = "";
+    // };
+
+    var mobile = (/iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase()));
+    if (mobile) {
+        alert("Looks like you're on a mobile device! This will look better in a computer browser :)");              
+    }
+});
+</script>
+ 
 </body>
 </html>
+
+<!-- REFERENCES -->
+<!-- https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/ -->
+<!-- https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/ -->
