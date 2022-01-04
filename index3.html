@@ -1,241 +1,133 @@
-<!-- JUST PLAYING AROUND - FORGIVE THE FORMATTING :) -->
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>PCT by SLR</title>
 <meta charset="utf-8">
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no, width=device-width">
-
+<title>PCT by SLR</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
 <style>
-body { margin: 0; padding: 0; height:100%; }
-#map { position: absolute; top: 0; bottom: 0; width: 100%; }
-.mapboxgl-popup {
-    overflow-y: scroll ! important;
-    max-height: 40% ! important;
-    width: 100%;
-    opacity: 0.9;
-    background-color: white;
-
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-}
-#popup {
-    overflow: scroll;
-    position: absolute;
-    background: white;
-    max-height: 70%;
-    bottom: 0;
-    left: 0;
-    box-sizing: border-box;
-    padding-bottom: 35px;
-    padding-top: 20px;
-    padding-right: 20px;
-    padding-left: 20px;
-    width: 100%;
-    opacity: 1.0;
-}
-
-#popup:hover {
-    opacity: 1.0;
-}
- 
-#title {
-    position: absolute;
-    background: #efefef;
-    padding: 10px;
-    font-family: 'Open Sans', sans-serif;
-}
-
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    #title {
+        position: absolute;
+        background: #efefef;
+        padding: 10px;
+        font-family: 'Open Sans', sans-serif;
+    }
 </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="title">PCT by SLR
+<div id="title">PCT by SLR - 
+    <input id="satellite-v9" type="radio" name="rtoggle" value="satellite" onclick="window.location='index.html';">
+    <label for="satellite-v9">daily</label>
+    <input id="light-v10" type="radio" name="rtoggle" value="light" checked="checked">
+    <label for="light-v10">route</label>
+    <br>
+    <button type="button" id="playbutton" class="btn btn-success">START</button>
 </div>
-<div id="popup">
-    <div class="card" style="width: 100%;">
-        <div class="row no-gutters">
-
-            <div class="col-sm-7">
-                <div class="card-body">
-                    <p class="card-text">Hover over a section of the route to see summary!</p>
-                    <button class="btn btn-primary" id="toggle">Hide Bottom Popup</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="data.js"></script>
+
 <script>
-mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
-var map = new mapboxgl.Map({
-    container: 'map',
-    // style: 'mapbox://styles/mapbox/streets-v11',
-    style: 'mapbox://styles/mapbox/outdoors-v11',
-    center: [-115.2849630, 40.245],
-    zoom: 4
-});
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/outdoors-v11',
+        zoom: 0,
+        center: [-116.467299, 32.590321]
+    });
+    let lnglat_orig = []
+    coordinates.forEach(function(c) {
+        lnglat_orig = lnglat_orig.concat(c["lnglat"])
+    });
+    let lnglat = []
+    for (i = 0; i < lnglat_orig.length; i=i+25) {
+        lnglat.push(lnglat_orig[i]);
+    }
 
-map.on('load', function () {
-    coordinates.forEach(function(d, i) {
-        let id = `route${i}`
-        let name = d["name"]
-        let pace = d["pace"]
-        let seconds = ((60*(pace % 1)).toFixed(0)).toString()
-        if (seconds.length == 1) {
-            seconds = "0" + seconds
+    let isPaused = true;
+    $('#playbutton').on('click', function(e) {
+        e.preventDefault();
+        isPaused = !isPaused;
+        if (!isPaused) {
+            $('#playbutton').attr('class', "btn btn-danger");
+            $('#playbutton').html('PAUSE');
         }
+        else {
+            $('#playbutton').attr('class', "btn btn-success");
+            $('#playbutton').html('START');
 
-        pace = Math.floor(pace).toString() + ":" + seconds
+        }
+    });
 
-        map.addSource(id, {
-            'type': 'geojson',
-            'data': {
+    // https://docs.mapbox.com/mapbox-gl-js/example/live-update-feature/
+    map.on('load', async () => {
+        const data = {
+            'type': "FeatureCollection",
+            'features': [{
                 'type': 'Feature',
-                'properties': {
-                    'description': `
-                    <div class="card" style="width: 100%;">
-                        <div class="row no-gutters">
-                            <div class="col-sm-5">
-                                <img class="card-img" style="height: 100%" src="${d["photo_url"]}" alt="No primary photo today!">
-                            </div>
-                            <div class="col-sm-7">
-                                <div class="card-body">
-                                    <h5 class="card-title">${name}</h5>
-                                    <div class="card-text">
-                                        
-                                        <strong>Distance:</strong> ${d["distance_miles"].toFixed(2)} miles
-                                        <br><strong>Pace:</strong> ${pace} min/mile
-                                        <br><strong>Vert:</strong> ${d["vert_feet"].toFixed(0)} ft.
-                                        <br><strong>Calories:</strong> ${d["calories"]} cals
-                                        <br><strong>Shoes:</strong> ${d["shoes"]}
-                                        <p>${d["description"]}</p>
-                                                                                
-                                    </div>
-                                    <button class="btn btn-primary" id="toggle">Hide This Popup</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    `
-                },
                 'geometry': {
                     'type': 'LineString',
-                    'coordinates': d["lnglat"],
+                    'properties': {},
+                    'coordinates': lnglat
+                }
+            }]
+            
+        }
+
+        const init_coordinates = data.features[0].geometry.coordinates;
+        data.features[0].geometry.coordinates = [init_coordinates[0]];
+        map.addSource('trace', { type: 'geojson', data: data });
+
+        // add it to the map
+        map.addLayer({
+            'id': 'trace',
+            'type': 'line',
+            'source': 'trace',
+            'paint': {
+                'line-color': 'blue',
+                'line-opacity': 0.75,
+                'line-width': 5
+            }
+        });
+
+        // setup the viewport
+        map.jumpTo({ 'center': init_coordinates[0], 'zoom': 12 });
+        map.setPitch(30);
+
+        // on a regular basis, add more coordinates from the saved list and update the map
+        let i = 0;
+        const timer = setInterval(() => {
+            if(!isPaused) {
+                if (i < init_coordinates.length) {
+                    data.features[0].geometry.coordinates.push(init_coordinates[i]);
+                    map.getSource('trace').setData(data);
+                    let camera_center = map.getFreeCameraOptions()._position.toLngLat()
+                    let delta = [
+                        ((camera_center.lng - init_coordinates[i][0])**2)**0.5, // horizontal
+                        ((camera_center.lat - init_coordinates[i][1])**2)**0.5  // vertical
+                    ]
+                    total_delta = (200*delta[0] + 100*delta[1]);
+                    let duration = 500;
+                    if (total_delta > 0.1) duration = 500000/(total_delta**3);
+
+                    map.panTo(
+                        init_coordinates[i],
+                        {duration: duration}
+                    );
+                    i++;
+                } else {
+                    window.clearInterval(timer);
                 }
             }
-        });
-
-        // const marker1 = new mapboxgl.Marker(
-        //     { color: 'black', scale: 0.5 }
-        //     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#marker-parameters
-        // )
-        //     .setLngLat(d["lnglat"][
-        //         Math.floor((0 + d["lnglat"].length)/2)
-        //     ])
-        //     .addTo(map);
-
-
-        if (i % 2 == 0) {
-            line_color = "#456"
-        } else {
-            line_color = "#89F"
-        }
-        map.addLayer({
-                'id': id,
-                'type': 'line',
-                'source': id,
-                'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            'paint': {
-                'line-color': line_color,
-                'line-width': 7
-            }
-        });
+        }, 15);
     });
-
-    // Create a popup, but don't add it to the map yet.
-    var popup = new mapboxgl.Popup({
-        closeButton: true,
-        closeOnClick: true,
-        offset: 25,
-        autoPan: false,
-        className: "mypopup"
-    });
-    function mouseOverFunc(e) {
-
-        // Change the cursor style as a UI indicator.
-        map.getCanvas().style.cursor = 'pointer';
-        
-        var coordinates = e.features[0].geometry.coordinates.slice();
-        var description = e.features[0].properties.description;
-        // console.log(description)
-        // console.log(coordinates)
-        
-        // Ensure that if the map is zoomed out such that multiple
-        // copies of the feature are visible, the popup appears
-        // over the copy being pointed to.
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
-        
-        // Populate the popup and set its coordinates
-        // based on the feature found.
-        // popup
-        //     .setLngLat(coordinates[0])
-        //     .setHTML(description)
-        //     .addTo(map);
-
-		document.getElementById("popup").innerHTML = description;
-        document.getElementById("toggle").onclick = function () {
-            document.getElementById("popup").innerHTML = "";
-        };
-
-    };
-    coordinates.forEach(function(_, i) {
-        map.on('mouseenter', 'route'+i, function(e) {
-            map.getCanvas().style.cursor = 'pointer';
-            mouseOverFunc(e)
-        })
-        // map.on('click', 'route'+i, mouseOverFunc);
-        map.on('mouseleave', 'route'+i, function () {
-            map.getCanvas().style.cursor = '';
-            // document.getElementById("popup").innerHTML = "";
-            popup.remove();
-        });	
-
-    });
-
-
-    document.getElementById("toggle").onclick = function () {
-        document.getElementById("popup").innerHTML = "";
-    };
-
-    var mobile = (/iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase()));
-    if (mobile) {
-        alert("Looks like you're on a mobile device! This will look better in a computer browser :)");              
-    }
-});
 </script>
- 
+
 </body>
 </html>
-
-<!-- REFERENCES -->
-<!-- https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/ -->
-<!-- https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/ -->
