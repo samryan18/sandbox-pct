@@ -29,7 +29,7 @@
     <input id="light-v10" type="radio" name="rtoggle" value="light" checked="checked">
     <label for="light-v10">route</label>
     <br>
-    <button type="button" id="playbutton" class="btn btn-success">START</button>
+    <p><button type="button" id="playbutton" class="btn btn-success">START</button></p>
 </div>
 <script src="data.js"></script>
 
@@ -38,7 +38,7 @@
     const map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/outdoors-v11',
-        zoom: 0,
+        zoom: 3,
         center: [-116.467299, 32.590321]
     });
     let lnglat_orig = []
@@ -97,7 +97,7 @@
         });
 
         // setup the viewport
-        map.jumpTo({ 'center': init_coordinates[0], 'zoom': 12 });
+        map.jumpTo({ 'center': init_coordinates[0], 'zoom': 11 });
         map.setPitch(30);
 
         // on a regular basis, add more coordinates from the saved list and update the map
