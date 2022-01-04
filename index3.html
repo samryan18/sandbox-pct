@@ -46,7 +46,7 @@
         lnglat_orig = lnglat_orig.concat(c["lnglat"])
     });
     let lnglat = []
-    for (i = 0; i < lnglat_orig.length; i=i+25) {
+    for (i = 0; i < lnglat_orig.length; i=i+5) {
         lnglat.push(lnglat_orig[i]);
     }
 
@@ -125,7 +125,7 @@
                     window.clearInterval(timer);
                 }
             }
-        }, 15);
+        }, 3);
     });
 </script>
 
