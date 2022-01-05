@@ -110,12 +110,12 @@
                     map.getSource('trace').setData(data);
                     let camera_center = map.getFreeCameraOptions()._position.toLngLat()
                     let delta = [
-                        ((camera_center.lng - init_coordinates[i][0])**2)**0.5, // horizontal
-                        ((camera_center.lat - init_coordinates[i][1])**2)**0.5  // vertical
+                        Math.abs(camera_center.lng - init_coordinates[i][0]), // horizontal
+                        Math.abs(camera_center.lat - init_coordinates[i][1])  // vertical
                     ]
                     total_delta = (200*delta[0] + 100*delta[1]);
                     let duration = 500;
-                    if (total_delta > 0.1) duration = 500000/(total_delta**3);
+                    if (total_delta > 0.1) duration = 5e7 / (total_delta**3);
 
                     map.panTo(
                         init_coordinates[i],
