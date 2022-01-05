@@ -30,21 +30,36 @@
             padding: 10px;
             font-family: 'Open Sans', sans-serif;
         }
+
+        #playbutton {
+            float: right;
+            position: relative;
+            margin: .5em;
+            width: 20%;
+            height: 2.5em;
+            padding: .5em;
+            border: none;
+            border-radius: .25em;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 0 1em #666;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
+
     <div id="title">PCT by SLR:
         <input id="satellite-v9" type="radio" name="rtoggle" value="satellite" onclick="window.location='index.html';">
         <label for="satellite-v9">daily</label>
         <input id="light-v10" type="radio" name="rtoggle" value="light" checked="checked">
         <label for="light-v10">route</label>
-        <p>
-            <button type="button" id="playbutton" class="btn btn-success">START</button>
-        </p>
-
     </div>
+    <button type="button" id="playbutton" class="btn btn-success">START</button>
+
     <script src="data.js"></script>
 
     <script>
