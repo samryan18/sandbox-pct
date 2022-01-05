@@ -122,7 +122,7 @@
             );
 
             // setup the viewport
-            map.jumpTo({ 'center': init_coordinates[0], 'zoom': 9 });
+            map.jumpTo({ 'center': [-116.467299, 32.7], 'zoom': 10 });
             map.setPitch(30);
 
             // on a regular basis, add more coordinates from the saved list and update the map
@@ -143,7 +143,7 @@
 
                         map.panTo(
                             init_coordinates[i],
-                            { duration: duration }
+                            { duration: duration, zoom: 9 }
                         );
                         i++;
                     } else {
@@ -151,6 +151,11 @@
                     }
                 }
             }, 1);
+
+            var mobile = (/iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase()));
+            if (mobile) {
+                alert("Looks like you're on a mobile device! This will look better in a computer browser :)");
+            }
         });
     </script>
 
