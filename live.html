@@ -114,14 +114,11 @@
                 'url': 'mapbox://mapbox.mapbox-terrain-dem-v1'
             });
             map.addLayer(
-            {
-                'id': 'hillshading',
-                'source': 'dem',
-                'type': 'hillshade'
-                // insert below waterway-river-canal-shadow;
-                // where hillshading sits in the Mapbox Outdoors style
-                },
-                // 'waterway-river-canal-shadow'
+                {
+                    'id': 'hillshading',
+                    'source': 'dem',
+                    'type': 'hillshade'
+                }
             );
 
             // setup the viewport
