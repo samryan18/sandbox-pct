@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>PCT by SLR</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9B%B0</text></svg>">
+    <meta property="og:title" content="PCT by SLR">
+    <meta property="og:description" content="2,751 miles on the Pacific Crest Trail">
+    <meta property="og:image" content="https://dgtzuqphqg23d.cloudfront.net/AFrhQRV2--xbh0bW-yhip5ELcVo_wRuultpkAviV4K0-768x576.jpg">
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
         rel="stylesheet">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
     <style>
         * { box-sizing: border-box; }
 
@@ -28,7 +32,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 20px;
+            height: 28px;
             z-index: 30;
             cursor: pointer;
             background: transparent;
@@ -39,38 +43,41 @@
             position: absolute;
             left: 0;
             right: 0;
-            top: 9px;
-            height: 2px;
+            top: 12px;
+            height: 4px;
             background: rgba(0, 0, 0, 0.08);
+            transition: height 0.15s, top 0.15s;
         }
+
+        #st-progress-bar:hover::before { height: 6px; top: 11px; }
 
         #st-progress-fill {
             position: absolute;
             left: 0;
-            top: 9px;
-            height: 2px;
+            top: 12px;
+            height: 4px;
             width: 0%;
             background: #1a1a1a;
             pointer-events: none;
-            transition: width 0.15s linear;
+            transition: width 0.1s linear, height 0.15s, top 0.15s;
         }
 
         #st-progress-fill::after {
             content: '';
             position: absolute;
-            right: -5px;
+            right: -7px;
             top: 50%;
             transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
             background: #1a1a1a;
             border-radius: 50%;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-            opacity: 0;
-            transition: opacity 0.2s;
+            transition: width 0.15s, height 0.15s;
         }
 
-        #st-progress-bar:hover #st-progress-fill::after { opacity: 1; }
+        #st-progress-bar:hover #st-progress-fill { height: 6px; top: 11px; }
+        #st-progress-bar:hover #st-progress-fill::after { width: 16px; height: 16px; right: -8px; }
 
         #st-map-container {
             position: fixed;
@@ -92,12 +99,47 @@
             z-index: 10;
             background: rgba(255, 255, 255, 0.92);
             color: #1a1a1a;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 10px 14px;
+            border-radius: 6px;
             font-size: 0.85rem;
             font-family: 'EB Garamond', Georgia, serif;
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+        #st-minimap {
+            width: 60px;
+            height: 90px;
+            flex-shrink: 0;
+        }
+
+        #day-counter-text {
+            line-height: 1.4;
+        }
+
+        #st-back-top {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0 0 0 4px;
+            margin-left: -4px;
+            font-size: 0.9rem;
+            color: rgba(0, 0, 0, 0.3);
+            transition: color 0.2s;
+            font-family: inherit;
+            line-height: 1;
+            display: none;
+        }
+        #st-back-top:hover { color: rgba(0, 0, 0, 0.6); }
+
+        @keyframes scrollHintBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        #day-counter.scroll-hint { animation: scrollHintBounce 2s ease-in-out infinite; }
+        #day-counter .scroll-arrow { display: inline-block; margin-left: 6px; opacity: 0.5; }
 
         #story {
             margin-left: 50%;
@@ -267,11 +309,13 @@
             cursor: pointer;
             transition: all 0.2s;
             border: none;
+            border-radius: 0;
             background: none;
             font-family: inherit;
+            outline: none;
         }
 
-        a.nav-radio-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .nav-radio-btn:not(:disabled):hover { color: #fff; background: rgba(255,255,255,0.1); }
         .nav-radio-btn.active { color: #fff; font-weight: 600; background: rgba(255,255,255,0.15); cursor: default; }
 
         /* Story: centered at bottom */
@@ -309,15 +353,15 @@
 
             #st-progress-bar {
                 position: relative;
-                height: 24px;
+                height: 36px;
                 flex-shrink: 0;
                 background: transparent;
                 border-bottom: 1px solid rgba(0,0,0,0.08);
             }
 
-            #st-progress-bar::before { top: 11px; height: 2px; background: rgba(0,0,0,0.08); }
-            #st-progress-fill { top: 11px; height: 2px; }
-            #st-progress-fill::after { opacity: 1; width: 12px; height: 12px; right: -6px; }
+            #st-progress-bar::before { top: 14px; height: 8px; background: rgba(0,0,0,0.06); }
+            #st-progress-fill { top: 14px; height: 8px; }
+            #st-progress-fill::after { width: 22px; height: 22px; right: -11px; }
 
             #story {
                 margin-left: 0;
@@ -339,11 +383,18 @@
             .day-card { margin-bottom: 60px; }
 
             #day-counter {
-                font-size: 0.78rem;
-                padding: 5px 12px;
+                font-size: 0.72rem;
+                padding: 6px 10px;
                 bottom: 8px;
                 left: 8px;
+                gap: 8px;
             }
+
+            #st-minimap {
+                width: 40px;
+                height: 60px;
+            }
+
 
             #st-nav { bottom: 16px; }
             .nav-radio-btn { padding: 5px 14px; font-size: 0.8rem; }
@@ -470,16 +521,31 @@
         #fo-controls button:hover { background: rgba(255, 255, 255, 0.15); }
         #fo-controls button.active { background: white; color: #333; }
 
+        #fo-controls .nav-radio-btn {
+            border: none;
+            border-radius: 0;
+            padding: 5px 14px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        #fo-controls .nav-radio-btn:hover { background: rgba(255,255,255,0.1); }
+        #fo-controls .nav-radio-btn.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+
         #fo-day-info {
             position: absolute;
-            top: 16px;
+            top: 50%;
+            transform: translateY(-50%) translateX(20px);
             right: 16px;
-            width: 360px;
+            width: min(32%, calc(100vw - 40px));
+            max-width: 520px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
             z-index: 10;
             font-family: 'EB Garamond', Georgia, serif;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 4px;
-            overflow: hidden;
+            border-radius: 6px;
+            overflow-x: hidden;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(8px);
             opacity: 0;
@@ -487,18 +553,19 @@
             transition: opacity 0.5s, transform 0.5s;
         }
 
-        #fo-day-info.visible { opacity: 1; transform: translateX(0); }
+        #fo-day-info.visible { opacity: 1; transform: translateY(-50%) translateX(0); }
 
         #fo-day-info img {
             width: 100%;
-            height: 200px;
+            height: 35vh;
+            max-height: 400px;
             object-fit: cover;
         }
 
-        #fo-day-info .info-body { padding: 16px 22px; }
+        #fo-day-info .info-body { padding: 22px 28px; }
 
         #fo-day-info .info-day-num {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-style: italic;
             color: #999;
         }
@@ -506,15 +573,15 @@
         #fo-day-info h5 {
             font-weight: 500;
             color: #1a1a1a;
-            margin: 2px 0 10px;
-            font-size: 1.15rem;
+            margin: 4px 0 16px;
+            font-size: 1.4rem;
         }
 
         #fo-day-info .info-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(5, 1fr);
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         #fo-day-info .info-stat {
@@ -525,22 +592,20 @@
         #fo-day-info .info-stat-val {
             font-weight: 600;
             color: #1a1a1a;
-            font-size: 1.05rem;
+            font-size: 1.25rem;
         }
 
         #fo-day-info .info-stat-lbl {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #999;
         }
 
         #fo-day-info .info-desc {
-            font-size: 0.85rem;
-            line-height: 1.6;
+            font-size: 1rem;
+            line-height: 1.75;
             color: #555;
-            max-height: 160px;
-            overflow-y: auto;
             white-space: pre-line;
         }
 
@@ -573,6 +638,17 @@
             color: white;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
             transition: all 0.3s;
+        }
+
+        #fo-minimap {
+            position: absolute;
+            bottom: 90px;
+            left: 14px;
+            z-index: 11;
+            width: 120px;
+            height: 180px;
+            pointer-events: none;
+            opacity: 0.85;
         }
 
         #fo-mile-counter.map-mode {
@@ -621,7 +697,7 @@
                 text-overflow: ellipsis;
             }
 
-            #fo-day-info .info-stats { gap: 2px; margin-bottom: 0; }
+            #fo-day-info .info-stats { grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 0; }
             #fo-day-info .info-stat { padding: 2px 2px; }
             #fo-day-info .info-stat-val { font-size: 0.85rem; }
             #fo-day-info .info-stat-lbl { font-size: 0.5rem; }
@@ -679,7 +755,7 @@
 
         <div id="st-map-container">
             <div id="st-map"></div>
-            <div id="day-counter">Scroll to begin</div>
+            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span></span><button id="st-back-top" title="Back to start">&#8593;</button></div>
         </div>
 
         <div id="story">
@@ -696,7 +772,7 @@
             </div>
         </div>
 
-        <div id="st-nav"><div class="nav-radio"><span class="nav-radio-btn active">Log</span><a class="nav-radio-btn" href="#flyover">Flyover</a></div></div>
+        <div id="st-nav"><div class="nav-radio"><button class="nav-radio-btn active" disabled>Log</button><button class="nav-radio-btn" onclick="location.hash='#flyover'">Flyover</button></div></div>
     </div>
 
     <!-- ── Flyover View ── -->
@@ -713,22 +789,30 @@
         </div>
 
         <div id="fo-day-info">
-            <img id="fo-info-photo" src="" onerror="this.style.display='none'">
+            <img id="fo-info-photo" src="" alt="" onerror="this.style.display='none'">
             <div class="info-body">
                 <div id="fo-info-day-num" class="info-day-num"></div>
                 <h5 id="fo-info-name"></h5>
                 <div class="info-stats">
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-miles"></div>
-                        <div class="info-stat-lbl">Miles</div>
+                        <div class="info-stat-lbl">miles</div>
                     </div>
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-vert"></div>
-                        <div class="info-stat-lbl">Vert</div>
+                        <div class="info-stat-lbl">ft gain</div>
                     </div>
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-pace"></div>
-                        <div class="info-stat-lbl">Pace</div>
+                        <div class="info-stat-lbl">per mi</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-val" id="fo-info-moving"></div>
+                        <div class="info-stat-lbl">moving</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-val" id="fo-info-elapsed"></div>
+                        <div class="info-stat-lbl">elapsed</div>
                     </div>
                 </div>
                 <div id="fo-info-desc" class="info-desc"></div>
@@ -737,10 +821,12 @@
 
         <div id="fo-toast" style="display:none;position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,0.7);color:rgba(255,255,255,0.85);padding:8px 18px;border-radius:16px;font-size:0.8rem;font-family:'EB Garamond',Georgia,serif;backdrop-filter:blur(8px);opacity:0;transition:opacity 0.5s;pointer-events:none;white-space:nowrap">3D terrain disabled on mobile</div>
 
+        <canvas id="fo-minimap" width="240" height="360" style="display:none"></canvas>
+
         <div id="fo-mile-counter">Mile 0 of 2,751</div>
 
         <div id="fo-controls">
-            <div class="nav-radio"><a class="nav-radio-btn" onclick="location.hash='';return false" href="#">Log</a><span class="nav-radio-btn active">Flyover</span></div>
+            <div class="nav-radio"><button class="nav-radio-btn" onclick="location.hash=''">Log</button><button class="nav-radio-btn active" disabled>Flyover</button></div>
             <div class="divider"></div>
             <button id="fo-playBtn" onclick="foTogglePlay()">Start</button>
             <div class="divider"></div>
@@ -757,7 +843,7 @@
             <button class="zoom-btn" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
             <button class="zoom-btn" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
             <div class="divider"></div>
-            <button id="fo-restartBtn" onclick="foRestart()" style="display:none">Restart</button>
+            <button id="fo-restartBtn" onclick="foRestart()">Restart</button>
         </div>
     </div>
 
@@ -773,6 +859,13 @@
             return mins + ':' + (secs < 10 ? '0' : '') + secs;
         }
 
+        function formatDuration(seconds) {
+            var h = Math.floor(seconds / 3600);
+            var m = Math.round((seconds % 3600) / 60);
+            if (m === 60) { h++; m = 0; }
+            return h + 'h ' + m + 'm';
+        }
+
         function commas(n) {
             return Math.round(n).toLocaleString();
         }
@@ -781,6 +874,7 @@
 
         // Shared data
         var isMobile = window.innerWidth <= 768;
+        var stCurrentDay = -1;
         var totalMiles = coordinates.reduce(function (s, d) { return s + d.distance_miles; }, 0);
         var totalVert = coordinates.reduce(function (s, d) { return s + d.vert_feet; }, 0);
         var totalCals = coordinates.reduce(function (s, d) { return s + d.calories; }, 0);
@@ -791,6 +885,123 @@
 
         function dayNumber(d) {
             return Math.round((new Date(d.start_date_local.substring(0, 10)) - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+        // ══════════════════════════════════════
+        // Story mini-map
+        // ══════════════════════════════════════
+        var stMinimapPoints = [];
+        var stMinimapCanvas = document.getElementById('st-minimap');
+        var stMinimapCtx = stMinimapCanvas.getContext('2d');
+
+        (function stInitMinimap() {
+            // Flatten all GPS points and sample ~300
+            var allPts = [];
+            var cumMiles = 0;
+            coordinates.forEach(function (d) {
+                for (var j = 0; j < d.lnglat.length; j++) {
+                    allPts.push({ lng: d.lnglat[j][0], lat: d.lnglat[j][1], mile: cumMiles });
+                }
+                cumMiles += d.distance_miles;
+            });
+
+            var step = Math.max(1, Math.floor(allPts.length / 300));
+            var sampled = [];
+            for (var i = 0; i < allPts.length; i += step) {
+                sampled.push(allPts[i]);
+            }
+            if (sampled[sampled.length - 1] !== allPts[allPts.length - 1]) {
+                sampled.push(allPts[allPts.length - 1]);
+            }
+
+            var minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+            for (var j = 0; j < sampled.length; j++) {
+                if (sampled[j].lng < minLng) minLng = sampled[j].lng;
+                if (sampled[j].lng > maxLng) maxLng = sampled[j].lng;
+                if (sampled[j].lat < minLat) minLat = sampled[j].lat;
+                if (sampled[j].lat > maxLat) maxLat = sampled[j].lat;
+            }
+
+            var cw = stMinimapCanvas.width;
+            var ch = stMinimapCanvas.height;
+            var pad = 6;
+            var drawW = cw - pad * 2;
+            var drawH = ch - pad * 2;
+            var lngRange = maxLng - minLng || 1;
+            var latRange = maxLat - minLat || 1;
+            var scale = Math.min(drawW / lngRange, drawH / latRange);
+            var offsetX = pad + (drawW - lngRange * scale) / 2;
+            var offsetY = pad + (drawH - latRange * scale) / 2;
+
+            stMinimapPoints = sampled.map(function (p) {
+                return {
+                    x: offsetX + (p.lng - minLng) * scale,
+                    y: offsetY + (maxLat - p.lat) * scale,
+                    mile: p.mile
+                };
+            });
+
+            stUpdateMinimap(0);
+        })();
+
+        function stUpdateMinimap(currentMile) {
+            var ctx = stMinimapCtx;
+            var cw = stMinimapCanvas.width;
+            var ch = stMinimapCanvas.height;
+            ctx.clearRect(0, 0, cw, ch);
+
+            // Find split point
+            var splitIdx = 0;
+            for (var i = 0; i < stMinimapPoints.length; i++) {
+                if (stMinimapPoints[i].mile <= currentMile) splitIdx = i;
+                else break;
+            }
+
+            // Future trail (dim)
+            if (splitIdx < stMinimapPoints.length - 1) {
+                ctx.beginPath();
+                ctx.moveTo(stMinimapPoints[splitIdx].x, stMinimapPoints[splitIdx].y);
+                for (var f = splitIdx + 1; f < stMinimapPoints.length; f++) {
+                    ctx.lineTo(stMinimapPoints[f].x, stMinimapPoints[f].y);
+                }
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Past trail
+            if (splitIdx > 0) {
+                ctx.beginPath();
+                ctx.moveTo(stMinimapPoints[0].x, stMinimapPoints[0].y);
+                for (var p = 1; p <= splitIdx; p++) {
+                    ctx.lineTo(stMinimapPoints[p].x, stMinimapPoints[p].y);
+                }
+                ctx.strokeStyle = '#5A7AFF';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Interpolate dot position
+            var dotX = stMinimapPoints[splitIdx].x;
+            var dotY = stMinimapPoints[splitIdx].y;
+            if (splitIdx < stMinimapPoints.length - 1) {
+                var fromMile = stMinimapPoints[splitIdx].mile;
+                var toMile = stMinimapPoints[splitIdx + 1].mile;
+                if (currentMile > fromMile && toMile > fromMile) {
+                    var t = (currentMile - fromMile) / (toMile - fromMile);
+                    dotX += (stMinimapPoints[splitIdx + 1].x - dotX) * t;
+                    dotY += (stMinimapPoints[splitIdx + 1].y - dotY) * t;
+                }
+            }
+
+            // Current position dot
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#5A7AFF';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
         }
 
         // ══════════════════════════════════════
@@ -808,6 +1019,7 @@
                     '<span class="stat-item">' + s + '</span>';
             }).join('');
 
+
             // Generate day cards
             var cumulativeMiles = 0;
             var cardsHTML = coordinates.map(function (d, i) {
@@ -816,14 +1028,15 @@
                 var dateStr = d.start_date_local.substring(0, 10);
                 var dayNum = dayNumber(d);
                 return '<div class="day-card" data-day="' + i + '" data-mile="' + cumulativeMiles.toFixed(0) + '" data-daynum="' + dayNum + '">' +
-                    '<img class="day-photo" src="' + d.photo_url + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
-                    '<div class="day-label">Day ' + dayNum + ' &middot; ' + dateStr + '</div>' +
+                    '<img class="day-photo" src="' + d.photo_url + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
+                    '<div class="day-label">Day ' + dayNum + ' &middot; ' + dateStr + ' &middot; Mile ' + Math.round(cumulativeMiles).toLocaleString() + '</div>' +
                     '<h3>' + d.name.replace(/^Day\s+\d+:\s*/i, '') + '</h3>' +
                     '<div class="day-stats">' +
                         '<div class="day-stat"><div class="day-stat-value">' + d.distance_miles.toFixed(1) + '</div><div class="day-stat-label">miles</div></div>' +
-                        '<div class="day-stat"><div class="day-stat-value">' + commas(d.vert_feet) + '</div><div class="day-stat-label">ft elev gain</div></div>' +
+                        '<div class="day-stat"><div class="day-stat-value">' + commas(d.vert_feet) + '</div><div class="day-stat-label">ft gain</div></div>' +
                         '<div class="day-stat"><div class="day-stat-value">' + pace + '</div><div class="day-stat-label">per mi</div></div>' +
-                        '<div class="day-stat"><div class="day-stat-value">' + d.calories.toFixed(0) + '</div><div class="day-stat-label">cal</div></div>' +
+                        '<div class="day-stat"><div class="day-stat-value">' + formatDuration(d.moving_time) + '</div><div class="day-stat-label">moving</div></div>' +
+                        '<div class="day-stat"><div class="day-stat-value">' + formatDuration(d.elapsed_time) + '</div><div class="day-stat-label">elapsed</div></div>' +
                     '</div>' +
                     '<div class="day-description">' + d.description.replace(/</g, '&lt;') + '</div>' +
                     (i < coordinates.length - 1 ? '<div class="day-divider" style="margin-top:60px;"></div>' : '') +
@@ -831,16 +1044,17 @@
             }).join('');
             document.getElementById('day-cards').innerHTML = cardsHTML;
 
+
             // Map
             var storyMap = new mapboxgl.Map({
                 container: 'st-map',
-                style: 'mapbox://styles/mapbox/outdoors-v11',
+                style: 'mapbox://styles/mapbox/outdoors-v12',
                 center: [-118.5, 36.5],
                 zoom: 4,
                 pitch: isMobile ? 0 : 30
             });
 
-            var currentDay = -1;
+            // currentDay is now global as stCurrentDay
 
             storyMap.on('load', function () {
                 if (!isMobile) {
@@ -897,8 +1111,8 @@
                     entries.forEach(function (entry) {
                         if (entry.isIntersecting) {
                             var dayIdx = parseInt(entry.target.dataset.day);
-                            if (dayIdx !== currentDay) {
-                                currentDay = dayIdx;
+                            if (dayIdx !== stCurrentDay) {
+                                stCurrentDay = dayIdx;
                                 highlightDay(dayIdx);
                             }
                         }
@@ -940,8 +1154,9 @@
                 var card = document.querySelector('.day-card[data-day="' + dayIdx + '"]');
                 var mile = card.dataset.mile;
                 var dayNum = card.dataset.daynum;
-                document.getElementById('day-counter').textContent =
+                document.getElementById('day-counter-text').textContent =
                     'Day ' + dayNum + ' of ' + totalDays + ' \u00b7 Mile ' + parseInt(mile).toLocaleString() + ' of ' + commas(totalMiles);
+                stUpdateMinimap(parseInt(mile));
             }
 
             var storyEl = document.getElementById('story');
@@ -955,9 +1170,24 @@
                     : storyEl.scrollHeight + storyEl.offsetTop - window.innerHeight;
             }
 
+            var stBackBtn = document.getElementById('st-back-top');
+            stBackBtn.addEventListener('click', function () {
+                if (isMobile) {
+                    storyEl.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
             scrollTarget.addEventListener('scroll', function () {
                 if (document.getElementById('story-view').style.display === 'none') return;
                 var scrollTop = isMobile ? storyEl.scrollTop : window.scrollY;
+                // Remove scroll hint on first scroll
+                if (scrollTop > 10) {
+                    var counter = document.getElementById('day-counter');
+                    if (counter.classList.contains('scroll-hint')) counter.classList.remove('scroll-hint');
+                }
+                stBackBtn.style.display = scrollTop > 200 ? '' : 'none';
                 var scrollHeight = stGetScrollMax();
                 var progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100 : 0;
                 stProgressFill.style.width = progress + '%';
@@ -1004,6 +1234,7 @@
         var foMapViewZoom = 10;
         var foIsMapView = false;
         var foPitch = isMobile ? 30 : 60;
+        var foPadding = isMobile ? {} : { right: Math.round(window.innerWidth * 0.17) };
         var foTransitionUntil = 0;
         var foLastFrameTime = 0;
         var foPendingStyleLoad = false;
@@ -1016,7 +1247,17 @@
         var foCampsiteCount = 0;
         var foTotalMiles = 0;
 
-        var FO_MS_PER_POINT = 3.3;
+        var FO_PCT_SECTIONS = [
+            { startMile: 0, name: 'Southern California' },
+            { startMile: 700, name: 'Sierra Nevada' },
+            { startMile: 1000, name: 'Northern California' },
+            { startMile: 1700, name: 'Oregon' },
+            { startMile: 2150, name: 'Washington' }
+        ];
+        var foCurrentSection = '';
+        var foToastTimers = [];
+
+        var FO_MS_PER_POINT = 4.5;
         var FO_LOOK_AHEAD = 25;
         var FO_HALF_LIFE = 0.25;
         var FO_BEARING_HALF_LIFE = 1.2;
@@ -1159,9 +1400,9 @@
             foCampsiteCount = 0;
             foIsPaused = true;
             foLastFrameTime = 0;
+            foCurrentSection = FO_PCT_SECTIONS[0].name;
             document.getElementById('fo-playBtn').textContent = 'Start';
             document.getElementById('fo-playBtn').classList.remove('active');
-            document.getElementById('fo-restartBtn').style.display = 'none';
             document.getElementById('fo-progress-fill').style.width = '0%';
             var campSrc = foMap.getSource('campsites');
             if (campSrc) campSrc.setData({ type: 'FeatureCollection', features: [] });
@@ -1169,9 +1410,10 @@
             if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [foRawPoints[0]] } });
             var hikerSrc = foMap.getSource('hiker');
             if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[0] } });
-            foMap.jumpTo({ center: foAllPoints[0], pitch: foPitch, zoom: foFlyoverZoom, bearing: 0 });
+            foMap.jumpTo({ center: foAllPoints[0], pitch: foIsMapView ? 0 : foPitch, zoom: foFlyoverZoom, bearing: 0, padding: foPadding });
             foUpdateDayInfo(0);
             document.getElementById('fo-mile-counter').textContent = 'Mile 0 of ' + commas(foTotalMiles);
+            foUpdateMinimap(0);
             if (foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
@@ -1183,12 +1425,13 @@
                 btn.classList.toggle('active', i === (foIsMapView ? 1 : 0));
             });
             document.getElementById('fo-compass').style.display = foIsMapView ? 'none' : '';
+            if (foMinimapCanvas) foMinimapCanvas.style.display = foIsMapView ? 'none' : '';
             document.getElementById('fo-mile-counter').classList.toggle('map-mode', foIsMapView);
             foTransitionUntil = performance.now() + 1200;
             foPendingStyleLoad = true;
             foMap.setStyle(foIsMapView
-                ? 'mapbox://styles/mapbox/outdoors-v11'
-                : 'mapbox://styles/mapbox/satellite-streets-v11');
+                ? 'mapbox://styles/mapbox/outdoors-v12'
+                : 'mapbox://styles/mapbox/satellite-streets-v12');
         }
 
         function foAddTrailLayers() {
@@ -1245,9 +1488,9 @@
             });
 
             if (foIsMapView) {
-                foMap.easeTo({ pitch: 0, bearing: 0, zoom: foMapViewZoom, duration: 800 });
+                foMap.easeTo({ pitch: 0, bearing: 0, zoom: foMapViewZoom, duration: 800, padding: foPadding });
             } else {
-                foMap.easeTo({ pitch: foPitch, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800 });
+                foMap.easeTo({ pitch: foPitch, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800, padding: foPadding });
             }
         }
 
@@ -1266,19 +1509,181 @@
             return 0;
         }
 
+        function foShowSectionToast(text) {
+            foToastTimers.forEach(clearTimeout);
+            var toast = document.getElementById('fo-toast');
+            toast.textContent = text;
+            toast.style.display = '';
+            toast.style.opacity = '0';
+            foToastTimers = [
+                setTimeout(function () { toast.style.opacity = '1'; }, 50),
+                setTimeout(function () { toast.style.opacity = '0'; }, 3000),
+                setTimeout(function () { toast.style.display = 'none'; }, 3500)
+            ];
+        }
+
+        // Mini-map (desktop only)
+        var foMinimapCanvas = null;
+        var foMinimapCtx = null;
+        var foMinimapPoints = [];  // sampled & projected [{x, y, rawIdx}]
+        var foMinimapReady = false;
+
+        function foInitMinimap() {
+            if (isMobile) return;
+            foMinimapCanvas = document.getElementById('fo-minimap');
+            if (!foMinimapCanvas) return;
+            foMinimapCtx = foMinimapCanvas.getContext('2d');
+            foMinimapCanvas.style.display = '';
+
+            // Sample ~300 points from foRawPoints
+            var step = Math.max(1, Math.floor(foRawPoints.length / 300));
+            var sampled = [];
+            for (var i = 0; i < foRawPoints.length; i += step) {
+                sampled.push({ lng: foRawPoints[i][0], lat: foRawPoints[i][1], rawIdx: i });
+            }
+            // Always include last point
+            if (sampled[sampled.length - 1].rawIdx !== foRawPoints.length - 1) {
+                sampled.push({ lng: foRawPoints[foRawPoints.length - 1][0], lat: foRawPoints[foRawPoints.length - 1][1], rawIdx: foRawPoints.length - 1 });
+            }
+
+            // Compute bounding box
+            var minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+            for (var j = 0; j < sampled.length; j++) {
+                if (sampled[j].lng < minLng) minLng = sampled[j].lng;
+                if (sampled[j].lng > maxLng) maxLng = sampled[j].lng;
+                if (sampled[j].lat < minLat) minLat = sampled[j].lat;
+                if (sampled[j].lat > maxLat) maxLat = sampled[j].lat;
+            }
+
+            // Project to canvas coords with padding
+            var cw = foMinimapCanvas.width;
+            var ch = foMinimapCanvas.height;
+            var pad = 12;
+            var drawW = cw - pad * 2;
+            var drawH = ch - pad * 2;
+            var lngRange = maxLng - minLng || 1;
+            var latRange = maxLat - minLat || 1;
+            var scaleX = drawW / lngRange;
+            var scaleY = drawH / latRange;
+            var scale = Math.min(scaleX, scaleY);
+            var offsetX = pad + (drawW - lngRange * scale) / 2;
+            var offsetY = pad + (drawH - latRange * scale) / 2;
+
+            foMinimapPoints = [];
+            for (var k = 0; k < sampled.length; k++) {
+                foMinimapPoints.push({
+                    x: offsetX + (sampled[k].lng - minLng) * scale,
+                    y: offsetY + (maxLat - sampled[k].lat) * scale,  // flip Y for lat
+                    rawIdx: sampled[k].rawIdx
+                });
+            }
+            foMinimapReady = true;
+            foUpdateMinimap(0);
+        }
+
+        function foUpdateMinimap(currentRawIdx) {
+            if (!foMinimapReady) return;
+            var ctx = foMinimapCtx;
+            var cw = foMinimapCanvas.width;
+            var ch = foMinimapCanvas.height;
+            ctx.clearRect(0, 0, cw, ch);
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(0, 0, cw, ch, 8);
+            } else {
+                ctx.rect(0, 0, cw, ch);
+            }
+            ctx.fill();
+
+            // Find split point — last minimap point at or before currentRawIdx
+            var splitIdx = 0;
+            for (var i = 0; i < foMinimapPoints.length; i++) {
+                if (foMinimapPoints[i].rawIdx <= currentRawIdx) splitIdx = i;
+                else break;
+            }
+
+            // Draw future trail (dim)
+            if (splitIdx < foMinimapPoints.length - 1) {
+                ctx.beginPath();
+                ctx.moveTo(foMinimapPoints[splitIdx].x, foMinimapPoints[splitIdx].y);
+                for (var f = splitIdx + 1; f < foMinimapPoints.length; f++) {
+                    ctx.lineTo(foMinimapPoints[f].x, foMinimapPoints[f].y);
+                }
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Draw past trail (bright)
+            if (splitIdx > 0) {
+                ctx.beginPath();
+                ctx.moveTo(foMinimapPoints[0].x, foMinimapPoints[0].y);
+                for (var p = 1; p <= splitIdx; p++) {
+                    ctx.lineTo(foMinimapPoints[p].x, foMinimapPoints[p].y);
+                }
+                ctx.strokeStyle = 'rgba(136, 153, 255, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Interpolate current position between minimap sample points
+            var dotX = foMinimapPoints[splitIdx].x;
+            var dotY = foMinimapPoints[splitIdx].y;
+            if (splitIdx < foMinimapPoints.length - 1) {
+                var fromIdx = foMinimapPoints[splitIdx].rawIdx;
+                var toIdx = foMinimapPoints[splitIdx + 1].rawIdx;
+                if (currentRawIdx > fromIdx && toIdx > fromIdx) {
+                    var t = (currentRawIdx - fromIdx) / (toIdx - fromIdx);
+                    dotX += (foMinimapPoints[splitIdx + 1].x - dotX) * t;
+                    dotY += (foMinimapPoints[splitIdx + 1].y - dotY) * t;
+                }
+            }
+
+            // Draw current position dot
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(136, 153, 255, 0.9)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
         function foUpdateDayInfo(dayIdx) {
             if (dayIdx === foCurrentDayIdx) return;
             foCurrentDayIdx = dayIdx;
+
+            // Detect section transitions
+            if (foDayBoundaries.length > 0) {
+                var cumMiles = foDayBoundaries[dayIdx].cumulativeMiles;
+                var sectionName = '';
+                for (var s = FO_PCT_SECTIONS.length - 1; s >= 0; s--) {
+                    if (cumMiles >= FO_PCT_SECTIONS[s].startMile) {
+                        sectionName = FO_PCT_SECTIONS[s].name;
+                        break;
+                    }
+                }
+                if (sectionName && sectionName !== foCurrentSection) {
+                    foCurrentSection = sectionName;
+                    foShowSectionToast(sectionName);
+                }
+            }
             var d = coordinates[dayIdx];
             var panel = document.getElementById('fo-day-info');
             var photo = document.getElementById('fo-info-photo');
             photo.src = d.photo_url;
+            photo.alt = d.name;
             photo.style.display = '';
-            document.getElementById('fo-info-day-num').textContent = 'Day ' + (dayIdx + 1) + ' of ' + coordinates.length;
+            document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
             document.getElementById('fo-info-name').textContent = d.name;
             document.getElementById('fo-info-miles').textContent = d.distance_miles.toFixed(1);
-            document.getElementById('fo-info-vert').textContent = commas(d.vert_feet) + ' ft';
+            document.getElementById('fo-info-vert').textContent = commas(d.vert_feet);
             document.getElementById('fo-info-pace').textContent = formatPace(d.pace);
+            document.getElementById('fo-info-moving').textContent = formatDuration(d.moving_time);
+            document.getElementById('fo-info-elapsed').textContent = formatDuration(d.elapsed_time);
             document.getElementById('fo-info-desc').textContent = d.description;
             panel.classList.remove('visible');
             setTimeout(function () { panel.classList.add('visible'); }, 50);
@@ -1309,6 +1714,8 @@
             foAllPoints = foSmoothPoints(foRawPoints, 50);
             foAllPoints = foSmoothPoints(foAllPoints, 30);
 
+            foInitMinimap();
+
             // Init state
             foTrailCoords = [foRawPoints[0]];
             foSmoothLng = foAllPoints[0][0];
@@ -1317,7 +1724,7 @@
             // Create map
             foMap = new mapboxgl.Map({
                 container: 'fo-map',
-                style: 'mapbox://styles/mapbox/satellite-streets-v11',
+                style: 'mapbox://styles/mapbox/satellite-streets-v12',
                 center: foAllPoints[0],
                 zoom: 13,
                 pitch: foPitch,
@@ -1423,9 +1830,9 @@
 
                 // Update camera
                 if (foIsMapView) {
-                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0, padding: foPadding });
                 } else {
-                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing, padding: foPadding });
                 }
 
                 // Update mile counter
@@ -1434,11 +1841,13 @@
                 if (dayIdx < foDayBoundaries.length - 1) {
                     var dayStart = foDayBoundaries[dayIdx].pointIndex;
                     var dayEnd = foDayBoundaries[dayIdx + 1].pointIndex;
-                    progressInDay = (targetIdx - dayStart) / (dayEnd - dayStart);
+                    progressInDay = dayEnd > dayStart ? (targetIdx - dayStart) / (dayEnd - dayStart) : 0;
                 }
                 var currentMile = dayData.cumulativeMiles + (coordinates[dayIdx].distance_miles * progressInDay);
                 document.getElementById('fo-mile-counter').textContent =
                     'Mile ' + commas(currentMile) + ' of ' + commas(foTotalMiles);
+
+                foUpdateMinimap(targetIdx);
             }
 
             function scrubFromEvent(e) {
@@ -1446,6 +1855,8 @@
                 var x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
                 seekTo(Math.max(0, Math.min(1, x / rect.width)));
             }
+
+            window.foSeekTo = seekTo;
 
             progressBar.addEventListener('mousedown', function (e) { isScrubbing = true; scrubFromEvent(e); });
             progressBar.addEventListener('touchstart', function (e) { isScrubbing = true; scrubFromEvent(e); }, { passive: true });
@@ -1457,7 +1868,7 @@
             function foAnimate(timestamp) {
                 if (!foLastFrameTime) foLastFrameTime = timestamp;
 
-                if (foIsPaused || document.getElementById('flyover-view').style.display === 'none') {
+                if (foIsPaused || isScrubbing || document.getElementById('flyover-view').style.display === 'none') {
                     foLastFrameTime = timestamp;
                     requestAnimationFrame(foAnimate);
                     return;
@@ -1472,7 +1883,6 @@
                 if (idx >= foAllPoints.length - 1) {
                     foIsPaused = true;
                     document.getElementById('fo-playBtn').textContent = 'Done';
-                    document.getElementById('fo-restartBtn').style.display = '';
                     return;
                 }
 
@@ -1513,9 +1923,9 @@
 
                 if (performance.now() >= foTransitionUntil) {
                     if (foIsMapView) {
-                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0, padding: foPadding });
                     } else {
-                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing, padding: foPadding });
                     }
                 }
 
@@ -1534,7 +1944,7 @@
                 if (dayIdx < foDayBoundaries.length - 1) {
                     var dayStart = foDayBoundaries[dayIdx].pointIndex;
                     var dayEnd = foDayBoundaries[dayIdx + 1].pointIndex;
-                    progressInDay = (idx - dayStart) / (dayEnd - dayStart);
+                    progressInDay = dayEnd > dayStart ? (idx - dayStart) / (dayEnd - dayStart) : 0;
                 }
                 var currentMile = dayData.cumulativeMiles + (coordinates[dayIdx].distance_miles * progressInDay);
                 document.getElementById('fo-mile-counter').textContent =
@@ -1546,6 +1956,8 @@
                 if (!foIsMapView) {
                     document.getElementById('fo-compass').style.transform = 'rotate(' + (-foSmoothBearing) + 'deg)';
                 }
+
+                foUpdateMinimap(idx);
 
                 requestAnimationFrame(foAnimate);
             }
@@ -1570,7 +1982,23 @@
                 document.body.style.overflow = 'hidden';
                 document.title = 'PCT by SLR - Flyover';
                 initFlyover();
+
+                // Sync: jump flyover to current story day
+                if (stCurrentDay >= 0 && foDayBoundaries.length > 0) {
+                    var targetPtIdx = foDayBoundaries[Math.min(stCurrentDay, foDayBoundaries.length - 1)].pointIndex;
+                    var fraction = targetPtIdx / (foAllPoints.length - 1);
+                    (function trySeek() {
+                        if (window.foSeekTo) {
+                            window.foSeekTo(Math.max(0, Math.min(1, fraction)));
+                        } else {
+                            setTimeout(trySeek, 100);
+                        }
+                    })();
+                }
             } else {
+                // Capture flyover position before hiding
+                var syncDayIdx = foCurrentDayIdx;
+
                 flyoverView.style.display = 'none';
                 storyView.style.display = '';
                 document.body.style.overflow = '';
@@ -1580,6 +2008,25 @@
                     document.getElementById('fo-playBtn').textContent = 'Start';
                     document.getElementById('fo-playBtn').classList.remove('active');
                 }
+
+                // Sync: scroll to flyover's current day if valid
+                if (syncDayIdx >= 0) {
+                    var syncCard = document.querySelector('.day-card[data-day="' + syncDayIdx + '"]');
+                    if (syncCard) {
+                        if (isMobile) {
+                            requestAnimationFrame(function () {
+                                document.getElementById('story').scrollTop = syncCard.offsetTop - 60;
+                            });
+                        } else {
+                            requestAnimationFrame(function () {
+                                syncCard.scrollIntoView({ block: 'start' });
+                            });
+                        }
+                        return;
+                    }
+                }
+
+                // Fallback: restore saved scroll position
                 if (isMobile) {
                     var savedPos = storyScrollPos;
                     requestAnimationFrame(function () {
@@ -1590,6 +2037,34 @@
                 }
             }
         }
+
+        // Keyboard shortcuts for flyover
+        document.addEventListener('keydown', function (e) {
+            if (document.getElementById('flyover-view').style.display === 'none') return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+            switch (e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    foTogglePlay();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (window.foSeekTo) window.foSeekTo(Math.max(0, (foFractionalIdx - 200) / (foAllPoints.length - 1)));
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (window.foSeekTo) window.foSeekTo(Math.min(1, (foFractionalIdx + 200) / (foAllPoints.length - 1)));
+                    break;
+                case 'Equal': case 'NumpadAdd':
+                    e.preventDefault();
+                    foAdjustZoom(1);
+                    break;
+                case 'Minus': case 'NumpadSubtract':
+                    e.preventDefault();
+                    foAdjustZoom(-1);
+                    break;
+            }
+        });
 
         function handleHash() {
             showView(window.location.hash === '#flyover' ? 'flyover' : 'story');
