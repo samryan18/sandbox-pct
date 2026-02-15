@@ -23,16 +23,54 @@
         /* ────────────────────────────────────
            Story view
            ──────────────────────────────────── */
-        #st-progress {
+        #st-progress-bar {
             position: fixed;
             top: 0;
             left: 0;
-            height: 2px;
-            background: #1a1a1a;
+            right: 0;
+            height: 20px;
             z-index: 30;
-            width: 0%;
-            transition: width 0.4s ease;
+            cursor: pointer;
+            background: transparent;
         }
+
+        #st-progress-bar::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 9px;
+            height: 2px;
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        #st-progress-fill {
+            position: absolute;
+            left: 0;
+            top: 9px;
+            height: 2px;
+            width: 0%;
+            background: #1a1a1a;
+            pointer-events: none;
+            transition: width 0.15s linear;
+        }
+
+        #st-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        #st-progress-bar:hover #st-progress-fill::after { opacity: 1; }
 
         #st-map-container {
             position: fixed;
@@ -250,21 +288,44 @@
         }
 
         @media (max-width: 768px) {
+            #story-view {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                height: 100dvh;
+                overflow: hidden;
+            }
+
             #st-map-container {
-                position: fixed;
-                top: 2px;
-                left: 0;
+                position: relative;
+                top: auto;
+                left: auto;
                 width: 100%;
                 height: 35vh;
+                height: 35dvh;
                 bottom: auto;
-                z-index: 5;
+                flex-shrink: 0;
             }
+
+            #st-progress-bar {
+                position: relative;
+                height: 24px;
+                flex-shrink: 0;
+                background: #f5f5f5;
+            }
+
+            #st-progress-bar::before { top: 11px; height: 3px; background: rgba(0,0,0,0.06); }
+            #st-progress-fill { top: 11px; height: 3px; }
+            #st-progress-fill::after { opacity: 1; width: 14px; height: 14px; right: -7px; }
 
             #story {
                 margin-left: 0;
-                margin-top: 35vh;
+                margin-top: 0;
                 width: 100%;
                 padding: 24px 24px 40px;
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .hero h1 { font-size: 1.8rem; }
@@ -311,23 +372,52 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 28px;
             z-index: 20;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.2);
+            background: transparent;
         }
 
-        #fo-progress-bar:hover { height: 8px; }
+        #fo-progress-bar::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 12px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            transition: height 0.15s, top 0.15s;
+        }
+
+        #fo-progress-bar:hover::before { height: 6px; top: 11px; }
 
         #fo-progress-fill {
-            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 12px;
+            height: 4px;
             width: 0%;
             background: #fff;
             pointer-events: none;
-            transition: width 0.1s linear;
+            transition: width 0.1s linear, height 0.15s, top 0.15s;
         }
 
-        #fo-progress-bar:hover #fo-progress-fill { background: #5A7AFF; }
+        #fo-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -7px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            transition: width 0.15s, height 0.15s, background 0.15s;
+        }
+
+        #fo-progress-bar:hover #fo-progress-fill { height: 6px; top: 11px; background: #5A7AFF; }
+        #fo-progress-bar:hover #fo-progress-fill::after { background: #5A7AFF; width: 16px; height: 16px; right: -8px; }
 
         #fo-controls {
             position: absolute;
@@ -359,11 +449,20 @@
             white-space: nowrap;
         }
 
-        #fo-controls .speed-btn,
-        #fo-controls .view-btn {
+        #fo-controls .ctrl-sm {
             padding: 4px 10px;
             font-size: 0.75rem;
             border-width: 1.5px;
+        }
+
+        #fo-controls .ctrl-sm svg {
+            width: 14px;
+            height: 14px;
+            vertical-align: -2px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
         }
 
         #fo-controls .divider {
@@ -492,7 +591,10 @@
 
         /* Flyover mobile */
         @media (max-width: 768px) {
-            #fo-progress-bar { height: 12px; }
+            #fo-progress-bar { height: 36px; }
+            #fo-progress-bar::before { top: 14px; height: 8px; }
+            #fo-progress-fill { top: 14px; height: 8px; }
+            #fo-progress-fill::after { width: 22px; height: 22px; right: -11px; }
 
             #fo-compass {
                 width: 36px;
@@ -549,8 +651,7 @@
                 letter-spacing: 0.5px;
             }
 
-            #fo-controls .speed-btn,
-            #fo-controls .view-btn {
+            #fo-controls .ctrl-sm {
                 padding: 3px 7px;
                 font-size: 0.65rem;
                 border-width: 1px;
@@ -573,8 +674,7 @@
         @media (max-width: 380px) {
             #fo-day-info h5 { font-size: 0.8rem; }
 
-            #fo-controls .speed-btn,
-            #fo-controls .view-btn {
+            #fo-controls .ctrl-sm {
                 padding: 2px 5px;
                 font-size: 0.6rem;
             }
@@ -591,7 +691,7 @@
 
     <!-- ── Story View ── -->
     <div id="story-view">
-        <div id="st-progress"></div>
+        <div id="st-progress-bar"><div id="st-progress-fill"></div></div>
 
         <div id="st-map-container">
             <div id="st-map"></div>
@@ -651,6 +751,8 @@
             </div>
         </div>
 
+        <div id="fo-toast" style="display:none;position:absolute;bottom:90px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,0.7);color:rgba(255,255,255,0.85);padding:8px 18px;border-radius:16px;font-size:0.8rem;font-family:'EB Garamond',Georgia,serif;backdrop-filter:blur(8px);opacity:0;transition:opacity 0.5s;pointer-events:none;white-space:nowrap">3D terrain disabled on mobile</div>
+
         <div id="fo-mile-counter">Mile 0 of 2,751</div>
 
         <div id="fo-controls">
@@ -658,18 +760,18 @@
             <div class="divider"></div>
             <button id="fo-playBtn" onclick="foTogglePlay()">Start</button>
             <div class="divider"></div>
-            <button class="speed-btn" onclick="foSetSpeed(0)">.25x</button>
-            <button class="speed-btn" onclick="foSetSpeed(1)">.5x</button>
-            <button class="speed-btn active" onclick="foSetSpeed(2)">1x</button>
-            <button class="speed-btn" onclick="foSetSpeed(3)">2x</button>
-            <button class="speed-btn" onclick="foSetSpeed(4)">4x</button>
-            <button class="speed-btn" onclick="foSetSpeed(5)">8x</button>
+            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(0)">.25x</button>
+            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(1)">.5x</button>
+            <button class="ctrl-sm speed-btn active" onclick="foSetSpeed(2)">1x</button>
+            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(3)">2x</button>
+            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(4)">4x</button>
+            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(5)">8x</button>
             <div class="divider"></div>
-            <button class="view-btn active" onclick="foSetView('3d')">3D</button>
-            <button class="view-btn" onclick="foSetView('map')">Map</button>
+            <button class="ctrl-sm view-btn active" onclick="foSetView('3d')">3D</button>
+            <button class="ctrl-sm view-btn" onclick="foSetView('map')">Map</button>
             <div class="divider"></div>
-            <button onclick="foAdjustZoom(-1)">&minus;</button>
-            <button onclick="foAdjustZoom(1)">+</button>
+            <button class="ctrl-sm" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
+            <button class="ctrl-sm" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
             <div class="divider"></div>
             <button id="fo-restartBtn" onclick="foRestart()" style="display:none">Restart</button>
         </div>
@@ -807,6 +909,7 @@
                     type: 'Feature', geometry: { type: 'MultiLineString', coordinates: allCoords }
                 });
 
+                var obsRoot = isMobile ? document.getElementById('story') : null;
                 var observer = new IntersectionObserver(function (entries) {
                     entries.forEach(function (entry) {
                         if (entry.isIntersecting) {
@@ -817,7 +920,7 @@
                             }
                         }
                     });
-                }, { threshold: 0.3 });
+                }, { threshold: 0.3, root: obsRoot });
 
                 document.querySelectorAll('.day-card').forEach(function (card) { observer.observe(card); });
 
@@ -825,7 +928,7 @@
                     entries.forEach(function (entry) {
                         if (entry.isIntersecting) entry.target.classList.add('visible');
                     });
-                }, { threshold: 0.1 });
+                }, { threshold: 0.1, root: obsRoot });
 
                 document.querySelectorAll('.day-card, .story-footer').forEach(function (el) { fadeObserver.observe(el); });
             });
@@ -858,14 +961,45 @@
                     'Day ' + dayNum + ' of ' + totalDays + ' \u00b7 Mile ' + parseInt(mile).toLocaleString() + ' of ' + commas(totalMiles);
             }
 
-            window.addEventListener('scroll', function () {
+            var storyEl = document.getElementById('story');
+            var stProgressFill = document.getElementById('st-progress-fill');
+            var stProgressBar = document.getElementById('st-progress-bar');
+            var scrollTarget = isMobile ? storyEl : window;
+
+            function stGetScrollMax() {
+                return isMobile
+                    ? storyEl.scrollHeight - storyEl.clientHeight
+                    : storyEl.scrollHeight + storyEl.offsetTop - window.innerHeight;
+            }
+
+            scrollTarget.addEventListener('scroll', function () {
                 if (document.getElementById('story-view').style.display === 'none') return;
-                var story = document.getElementById('story');
-                var scrollTop = window.scrollY;
-                var scrollHeight = story.scrollHeight + story.offsetTop - window.innerHeight;
-                var progress = Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100;
-                document.getElementById('st-progress').style.width = progress + '%';
+                var scrollTop = isMobile ? storyEl.scrollTop : window.scrollY;
+                var scrollHeight = stGetScrollMax();
+                var progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100 : 0;
+                stProgressFill.style.width = progress + '%';
             });
+
+            // Click/drag to scroll
+            var stScrubbing = false;
+            function stScrubTo(e) {
+                var rect = stProgressBar.getBoundingClientRect();
+                var x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+                var fraction = Math.max(0, Math.min(1, x / rect.width));
+                var scrollMax = stGetScrollMax();
+                var target = fraction * scrollMax;
+                if (isMobile) {
+                    storyEl.scrollTop = target;
+                } else {
+                    window.scrollTo(0, target);
+                }
+            }
+            stProgressBar.addEventListener('mousedown', function (e) { stScrubbing = true; stScrubTo(e); });
+            stProgressBar.addEventListener('touchstart', function (e) { stScrubbing = true; stScrubTo(e); }, { passive: true });
+            document.addEventListener('mousemove', function (e) { if (stScrubbing) stScrubTo(e); });
+            document.addEventListener('touchmove', function (e) { if (stScrubbing) stScrubTo(e); }, { passive: true });
+            document.addEventListener('mouseup', function () { stScrubbing = false; });
+            document.addEventListener('touchend', function () { stScrubbing = false; });
         })();
 
         // ══════════════════════════════════════
@@ -895,6 +1029,8 @@
         var foRawPoints = [];
         var foAllPoints = [];
         var foDayBoundaries = [];
+        var foDayEndPoints = [];
+        var foCampsiteCount = 0;
         var foTotalMiles = 0;
 
         var FO_MS_PER_POINT = 3.3;
@@ -935,6 +1071,48 @@
             return (Math.atan2(y, x) * toDeg + 360) % 360;
         }
 
+        function foCampsiteIcon() {
+            var size = 40;
+            var r = size / 2;
+            var canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            // Outer circle — subtle halo
+            ctx.beginPath();
+            ctx.arc(r, r, r - 1, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fill();
+            // Inner disc
+            ctx.beginPath();
+            ctx.arc(r, r, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            // Tent shape inside disc
+            ctx.beginPath();
+            ctx.moveTo(r, r - 4.5);
+            ctx.lineTo(r + 4, r + 3);
+            ctx.lineTo(r - 4, r + 3);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(80,80,80,0.6)';
+            ctx.fill();
+            return { width: size, height: size, data: ctx.getImageData(0, 0, size, size).data };
+        }
+
+        function foCampsiteFeatures(upToDayIdx) {
+            var features = [];
+            for (var i = 0; i < upToDayIdx; i++) {
+                features.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: foDayEndPoints[i] }
+                });
+            }
+            return { type: 'FeatureCollection', features: features };
+        }
+
         function foAngleDiff(a, b) {
             var diff = b - a;
             while (diff > 180) diff -= 360;
@@ -946,6 +1124,7 @@
             foIsPaused = !foIsPaused;
             document.getElementById('fo-playBtn').textContent = foIsPaused ? 'Start' : 'Pause';
             document.getElementById('fo-playBtn').classList.toggle('active', !foIsPaused);
+            if (!foIsPaused && foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
         function foSetSpeed(idx) {
@@ -963,12 +1142,15 @@
             foSmoothLat = foAllPoints[0][1];
             foSmoothBearing = 0;
             foCurrentDayIdx = -1;
+            foCampsiteCount = 0;
             foIsPaused = true;
             foLastFrameTime = 0;
             document.getElementById('fo-playBtn').textContent = 'Start';
             document.getElementById('fo-playBtn').classList.remove('active');
             document.getElementById('fo-restartBtn').style.display = 'none';
             document.getElementById('fo-progress-fill').style.width = '0%';
+            var campSrc = foMap.getSource('campsites');
+            if (campSrc) campSrc.setData({ type: 'FeatureCollection', features: [] });
             if (foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
@@ -1019,6 +1201,15 @@
             });
             foMap.addLayer({ id: 'trail', type: 'line', source: 'trail',
                 paint: { 'line-color': trailColor, 'line-width': foIsMapView ? 3 : 4, 'line-opacity': 0.85 }
+            });
+
+            // Campsite markers
+            foMap.addImage('campsite', foCampsiteIcon());
+            var currentDayIdx = foGetCurrentDay(idx);
+            foMap.addSource('campsites', { type: 'geojson', data: foCampsiteFeatures(currentDayIdx) });
+            foMap.addLayer({ id: 'campsites', type: 'symbol', source: 'campsites',
+                layout: { 'icon-image': 'campsite', 'icon-size': 0.6, 'icon-allow-overlap': true },
+                paint: { 'icon-opacity': 0.7 }
             });
 
             var hikerPt = foAllPoints[Math.min(idx, foAllPoints.length - 1)];
@@ -1087,6 +1278,12 @@
             });
             foTotalMiles = cumMiles;
 
+            // Build day-end campsite points (last GPS coord of each day)
+            for (var d = 0; d < coordinates.length; d++) {
+                var pts = coordinates[d].lnglat;
+                foDayEndPoints.push(pts[pts.length - 1]);
+            }
+
             // Pre-smooth
             foAllPoints = foSmoothPoints(foRawPoints, 50);
             foAllPoints = foSmoothPoints(foAllPoints, 30);
@@ -1137,6 +1334,16 @@
                     paint: { 'line-color': '#89F', 'line-width': 4, 'line-opacity': 0.85 }
                 });
 
+                // Campsite markers
+                foMap.addImage('campsite', foCampsiteIcon());
+                foMap.addSource('campsites', { type: 'geojson', data: {
+                    type: 'FeatureCollection', features: []
+                }});
+                foMap.addLayer({ id: 'campsites', type: 'symbol', source: 'campsites',
+                    layout: { 'icon-image': 'campsite', 'icon-size': 0.6, 'icon-allow-overlap': true },
+                    paint: { 'icon-opacity': 0.7 }
+                });
+
                 foMap.addSource('hiker', { type: 'geojson', data: {
                     type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[0] }
                 }});
@@ -1149,6 +1356,15 @@
 
                 foUpdateDayInfo(0);
                 requestAnimationFrame(foAnimate);
+
+                // Show mobile toast
+                if (isMobile) {
+                    var toast = document.getElementById('fo-toast');
+                    toast.style.display = '';
+                    setTimeout(function () { toast.style.opacity = '1'; }, 100);
+                    setTimeout(function () { toast.style.opacity = '0'; }, 3500);
+                    setTimeout(function () { toast.style.display = 'none'; }, 4000);
+                }
             });
 
             // Progress bar scrubbing
@@ -1159,8 +1375,6 @@
             function seekTo(fraction) {
                 var targetIdx = Math.floor(fraction * (foAllPoints.length - 1));
                 foFractionalIdx = targetIdx;
-                foTrailPointCount = 0;
-                foTrailCoords = [foRawPoints[0]];
                 foSmoothLng = foAllPoints[targetIdx][0];
                 foSmoothLat = foAllPoints[targetIdx][1];
                 var aheadIdx = Math.min(targetIdx + FO_LOOK_AHEAD, foAllPoints.length - 1);
@@ -1169,7 +1383,41 @@
                     foAllPoints[aheadIdx][0], foAllPoints[aheadIdx][1]
                 );
                 foCurrentDayIdx = -1;
+                foCampsiteCount = 0;
                 progressFill.style.width = (fraction * 100) + '%';
+
+                // Immediately update visuals (even when paused)
+                foTrailCoords = foRawPoints.slice(0, targetIdx + 1);
+                foTrailPointCount = targetIdx + 1;
+                var trailSrc = foMap.getSource('trail');
+                var hikerSrc = foMap.getSource('hiker');
+                if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: foTrailCoords } });
+                if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[targetIdx] } });
+
+                var dayIdx = foGetCurrentDay(targetIdx);
+                foUpdateDayInfo(dayIdx);
+                foCampsiteCount = dayIdx;
+                var campSrc = foMap.getSource('campsites');
+                if (campSrc) campSrc.setData(foCampsiteFeatures(dayIdx));
+
+                // Update camera
+                if (foIsMapView) {
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+                } else {
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                }
+
+                // Update mile counter
+                var dayData = foDayBoundaries[dayIdx];
+                var progressInDay = 0;
+                if (dayIdx < foDayBoundaries.length - 1) {
+                    var dayStart = foDayBoundaries[dayIdx].pointIndex;
+                    var dayEnd = foDayBoundaries[dayIdx + 1].pointIndex;
+                    progressInDay = (targetIdx - dayStart) / (dayEnd - dayStart);
+                }
+                var currentMile = dayData.cumulativeMiles + (coordinates[dayIdx].distance_miles * progressInDay);
+                document.getElementById('fo-mile-counter').textContent =
+                    'Mile ' + commas(currentMile) + ' of ' + commas(foTotalMiles);
             }
 
             function scrubFromEvent(e) {
@@ -1253,6 +1501,13 @@
                 var dayIdx = foGetCurrentDay(idx);
                 foUpdateDayInfo(dayIdx);
 
+                // Update campsite markers when a new day is reached
+                if (dayIdx !== foCampsiteCount) {
+                    foCampsiteCount = dayIdx;
+                    var campSrc = foMap.getSource('campsites');
+                    if (campSrc) campSrc.setData(foCampsiteFeatures(dayIdx));
+                }
+
                 var dayData = foDayBoundaries[dayIdx];
                 var progressInDay = 0;
                 if (dayIdx < foDayBoundaries.length - 1) {
@@ -1287,7 +1542,8 @@
             var flyoverView = document.getElementById('flyover-view');
 
             if (view === 'flyover') {
-                storyScrollPos = window.scrollY;
+                var stEl = document.getElementById('story');
+                storyScrollPos = isMobile ? stEl.scrollTop : window.scrollY;
                 storyView.style.display = 'none';
                 flyoverView.style.display = '';
                 document.body.style.overflow = 'hidden';
@@ -1303,7 +1559,14 @@
                     document.getElementById('fo-playBtn').textContent = 'Start';
                     document.getElementById('fo-playBtn').classList.remove('active');
                 }
-                window.scrollTo(0, storyScrollPos);
+                if (isMobile) {
+                    var savedPos = storyScrollPos;
+                    requestAnimationFrame(function () {
+                        document.getElementById('story').scrollTop = savedPos;
+                    });
+                } else {
+                    window.scrollTo(0, storyScrollPos);
+                }
             }
         }
 
