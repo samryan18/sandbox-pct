@@ -1007,6 +1007,7 @@
         var foLastFrameTime = 0;
         var foPendingStyleLoad = false;
         var foAnimateFn = null;
+        var foLoopRunning = false;
 
         var foRawPoints = [];
         var foAllPoints = [];
@@ -1134,10 +1135,18 @@
         }
 
         function foTogglePlay() {
+            // If animation finished, restart instead of toggling
+            if (foFractionalIdx >= foAllPoints.length - 1) {
+                foRestart();
+                foIsPaused = false;
+                document.getElementById('fo-playBtn').textContent = 'Pause';
+                document.getElementById('fo-playBtn').classList.add('active');
+                return;
+            }
             foIsPaused = !foIsPaused;
             document.getElementById('fo-playBtn').textContent = foIsPaused ? 'Start' : 'Pause';
             document.getElementById('fo-playBtn').classList.toggle('active', !foIsPaused);
-            if (!foIsPaused && foAnimateFn) requestAnimationFrame(foAnimateFn);
+            if (!foIsPaused && foAnimateFn && !foLoopRunning) requestAnimationFrame(foAnimateFn);
         }
 
         function foSetSpeed(idx) {
@@ -1168,10 +1177,14 @@
             if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [foRawPoints[0]] } });
             var hikerSrc = foMap.getSource('hiker');
             if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[0] } });
-            foMap.jumpTo({ center: foAllPoints[0], pitch: foPitch, zoom: foFlyoverZoom, bearing: 0 });
+            if (foIsMapView) {
+                foMap.jumpTo({ center: foAllPoints[0], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+            } else {
+                foMap.jumpTo({ center: foAllPoints[0], pitch: foPitch, zoom: foFlyoverZoom, bearing: 0 });
+            }
             foUpdateDayInfo(0);
             document.getElementById('fo-mile-counter').textContent = 'Mile 0 of ' + commas(foTotalMiles);
-            if (foAnimateFn) requestAnimationFrame(foAnimateFn);
+            if (foAnimateFn && !foLoopRunning) requestAnimationFrame(foAnimateFn);
         }
 
         function foSetView(view) {
@@ -1453,12 +1466,19 @@
             document.addEventListener('mouseup', function () { isScrubbing = false; });
             document.addEventListener('touchend', function () { isScrubbing = false; });
 
+            var foPlayBtn = document.getElementById('fo-playBtn');
+            var foRestartBtnEl = document.getElementById('fo-restartBtn');
+            var foMileCounter = document.getElementById('fo-mile-counter');
+            var foCompassEl = document.getElementById('fo-compass');
+            var foFlyoverEl = document.getElementById('flyover-view');
+
             function foAnimate(timestamp) {
+                foLoopRunning = true;
                 if (!foLastFrameTime) foLastFrameTime = timestamp;
 
-                if (foIsPaused || document.getElementById('flyover-view').style.display === 'none') {
+                if (foIsPaused || foFlyoverEl.style.display === 'none') {
                     foLastFrameTime = timestamp;
-                    requestAnimationFrame(foAnimate);
+                    foLoopRunning = false;
                     return;
                 }
 
@@ -1470,8 +1490,9 @@
                 var idx = Math.floor(foFractionalIdx);
                 if (idx >= foAllPoints.length - 1) {
                     foIsPaused = true;
-                    document.getElementById('fo-playBtn').textContent = 'Done';
-                    document.getElementById('fo-restartBtn').style.display = '';
+                    foLoopRunning = false;
+                    foPlayBtn.textContent = 'Done';
+                    foRestartBtnEl.style.display = '';
                     return;
                 }
 
@@ -1536,14 +1557,13 @@
                     progressInDay = (idx - dayStart) / (dayEnd - dayStart);
                 }
                 var currentMile = dayData.cumulativeMiles + (coordinates[dayIdx].distance_miles * progressInDay);
-                document.getElementById('fo-mile-counter').textContent =
-                    'Mile ' + commas(currentMile) + ' of ' + commas(foTotalMiles);
+                foMileCounter.textContent = 'Mile ' + commas(currentMile) + ' of ' + commas(foTotalMiles);
 
                 if (!isScrubbing) {
                     progressFill.style.width = (idx / (foAllPoints.length - 1) * 100) + '%';
                 }
                 if (!foIsMapView) {
-                    document.getElementById('fo-compass').style.transform = 'rotate(' + (-foSmoothBearing) + 'deg)';
+                    foCompassEl.style.transform = 'rotate(' + (-foSmoothBearing) + 'deg)';
                 }
 
                 requestAnimationFrame(foAnimate);
