@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>PCT by SLR</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9B%B0</text></svg>">
+    <meta property="og:title" content="PCT by SLR">
+    <meta property="og:description" content="2,751 miles on the Pacific Crest Trail">
+    <meta property="og:image" content="https://dgtzuqphqg23d.cloudfront.net/AFrhQRV2--xbh0bW-yhip5ELcVo_wRuultpkAviV4K0-768x576.jpg">
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
         rel="stylesheet">
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.18.1/mapbox-gl.js"></script>
     <style>
         * { box-sizing: border-box; }
 
@@ -92,12 +96,40 @@
             z-index: 10;
             background: rgba(255, 255, 255, 0.92);
             color: #1a1a1a;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 10px 14px;
+            border-radius: 6px;
             font-size: 0.85rem;
             font-family: 'EB Garamond', Georgia, serif;
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+        #st-minimap {
+            width: 60px;
+            height: 90px;
+            flex-shrink: 0;
+        }
+
+        #day-counter-text {
+            line-height: 1.4;
+        }
+
+        #st-back-top {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0 0 0 4px;
+            margin-left: -4px;
+            font-size: 0.9rem;
+            color: rgba(0, 0, 0, 0.3);
+            transition: color 0.2s;
+            font-family: inherit;
+            line-height: 1;
+            display: none;
+        }
+        #st-back-top:hover { color: rgba(0, 0, 0, 0.6); }
 
         @keyframes scrollHintBounce {
             0%, 100% { transform: translateY(0); }
@@ -105,27 +137,6 @@
         }
         #day-counter.scroll-hint { animation: scrollHintBounce 2s ease-in-out infinite; }
         #day-counter .scroll-arrow { display: inline-block; margin-left: 6px; opacity: 0.5; }
-
-        #day-jump {
-            position: absolute;
-            right: 12px;
-            bottom: 16px;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.92);
-            color: #1a1a1a;
-            padding: 6px 24px 6px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-family: 'EB Garamond', Georgia, serif;
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            -webkit-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 8px center;
-        }
 
         #story {
             margin-left: 50%;
@@ -166,16 +177,6 @@
             flex-wrap: wrap;
             gap: 0;
             justify-content: flex-start;
-        }
-
-        .hero-image {
-            width: calc(100% + 96px);
-            margin-left: -48px;
-            margin-bottom: 30px;
-            height: 400px;
-            object-fit: cover;
-            object-position: center 40%;
-            display: block;
         }
 
         .hero-summary .stat-item { white-space: nowrap; }
@@ -309,7 +310,7 @@
             font-family: inherit;
         }
 
-        a.nav-radio-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .nav-radio-btn:not(:disabled):hover { color: #fff; background: rgba(255,255,255,0.1); }
         .nav-radio-btn.active { color: #fff; font-weight: 600; background: rgba(255,255,255,0.15); cursor: default; }
 
         /* Story: centered at bottom */
@@ -367,12 +368,6 @@
                 -webkit-overflow-scrolling: touch;
             }
 
-            .hero-image {
-                width: calc(100% + 48px);
-                margin-left: -24px;
-                height: 250px;
-            }
-
             .hero h1 { font-size: 1.8rem; }
 
             .hero {
@@ -383,18 +378,18 @@
             .day-card { margin-bottom: 60px; }
 
             #day-counter {
-                font-size: 0.78rem;
-                padding: 5px 12px;
+                font-size: 0.72rem;
+                padding: 6px 10px;
                 bottom: 8px;
                 left: 8px;
+                gap: 8px;
             }
 
-            #day-jump {
-                font-size: 0.72rem;
-                padding: 4px 20px 4px 8px;
-                bottom: 8px;
-                right: 8px;
+            #st-minimap {
+                width: 40px;
+                height: 60px;
             }
+
 
             #st-nav { bottom: 16px; }
             .nav-radio-btn { padding: 5px 14px; font-size: 0.8rem; }
@@ -525,11 +520,11 @@
             position: absolute;
             top: 16px;
             right: 16px;
-            width: 360px;
+            width: 420px;
             z-index: 10;
             font-family: 'EB Garamond', Georgia, serif;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(8px);
@@ -542,14 +537,14 @@
 
         #fo-day-info img {
             width: 100%;
-            height: 200px;
+            height: 260px;
             object-fit: cover;
         }
 
-        #fo-day-info .info-body { padding: 16px 22px; }
+        #fo-day-info .info-body { padding: 18px 24px; }
 
         #fo-day-info .info-day-num {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             font-style: italic;
             color: #999;
         }
@@ -557,15 +552,15 @@
         #fo-day-info h5 {
             font-weight: 500;
             color: #1a1a1a;
-            margin: 2px 0 10px;
-            font-size: 1.15rem;
+            margin: 3px 0 12px;
+            font-size: 1.25rem;
         }
 
         #fo-day-info .info-stats {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 10px;
+            margin-bottom: 14px;
         }
 
         #fo-day-info .info-stat {
@@ -576,21 +571,21 @@
         #fo-day-info .info-stat-val {
             font-weight: 600;
             color: #1a1a1a;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
         }
 
         #fo-day-info .info-stat-lbl {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #999;
         }
 
         #fo-day-info .info-desc {
-            font-size: 0.85rem;
-            line-height: 1.6;
+            font-size: 0.9rem;
+            line-height: 1.65;
             color: #555;
-            max-height: 160px;
+            max-height: 200px;
             overflow-y: auto;
             white-space: pre-line;
         }
@@ -741,13 +736,11 @@
 
         <div id="st-map-container">
             <div id="st-map"></div>
-            <div id="day-counter" class="scroll-hint">Scroll to begin <span class="scroll-arrow">&#8595;</span></div>
-            <select id="day-jump"><option value="">Jump to day...</option></select>
+            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span></span><button id="st-back-top" title="Back to start">&#8593;</button></div>
         </div>
 
         <div id="story">
             <div class="hero">
-                <img id="hero-image" class="hero-image" src="" alt="Pacific Crest Trail" style="display:none">
                 <h1>2,751 Miles North</h1>
                 <p class="about-text">Hello! I'm Sam. Some friends and I walked north for a few months in 2021. I was really gunning for a Taco Bell sponsorship but never got one. Luckily it's the journey that counts.</p>
                 <p class="about-text">I tracked every step I took on my Garmin GPS watch and have the full route here.</p>
@@ -760,7 +753,7 @@
             </div>
         </div>
 
-        <div id="st-nav"><div class="nav-radio"><span class="nav-radio-btn active">Log</span><a class="nav-radio-btn" href="#flyover">Flyover</a></div></div>
+        <div id="st-nav"><div class="nav-radio"><button class="nav-radio-btn active" disabled>Log</button><button class="nav-radio-btn" onclick="location.hash='#flyover'">Flyover</button></div></div>
     </div>
 
     <!-- ── Flyover View ── -->
@@ -777,7 +770,7 @@
         </div>
 
         <div id="fo-day-info">
-            <img id="fo-info-photo" src="" onerror="this.style.display='none'">
+            <img id="fo-info-photo" src="" alt="" onerror="this.style.display='none'">
             <div class="info-body">
                 <div id="fo-info-day-num" class="info-day-num"></div>
                 <h5 id="fo-info-name"></h5>
@@ -806,7 +799,7 @@
         <div id="fo-mile-counter">Mile 0 of 2,751</div>
 
         <div id="fo-controls">
-            <div class="nav-radio"><a class="nav-radio-btn" onclick="location.hash='';return false" href="#">Log</a><span class="nav-radio-btn active">Flyover</span></div>
+            <div class="nav-radio"><button class="nav-radio-btn" onclick="location.hash=''">Log</button><button class="nav-radio-btn active" disabled>Flyover</button></div>
             <div class="divider"></div>
             <button id="fo-playBtn" onclick="foTogglePlay()">Start</button>
             <div class="divider"></div>
@@ -823,7 +816,7 @@
             <button class="zoom-btn" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
             <button class="zoom-btn" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
             <div class="divider"></div>
-            <button id="fo-restartBtn" onclick="foRestart()" style="display:none">Restart</button>
+            <button id="fo-restartBtn" onclick="foRestart()">Restart</button>
         </div>
     </div>
 
@@ -868,6 +861,123 @@
         }
 
         // ══════════════════════════════════════
+        // Story mini-map
+        // ══════════════════════════════════════
+        var stMinimapPoints = [];
+        var stMinimapCanvas = document.getElementById('st-minimap');
+        var stMinimapCtx = stMinimapCanvas.getContext('2d');
+
+        (function stInitMinimap() {
+            // Flatten all GPS points and sample ~300
+            var allPts = [];
+            var cumMiles = 0;
+            coordinates.forEach(function (d) {
+                for (var j = 0; j < d.lnglat.length; j++) {
+                    allPts.push({ lng: d.lnglat[j][0], lat: d.lnglat[j][1], mile: cumMiles });
+                }
+                cumMiles += d.distance_miles;
+            });
+
+            var step = Math.max(1, Math.floor(allPts.length / 300));
+            var sampled = [];
+            for (var i = 0; i < allPts.length; i += step) {
+                sampled.push(allPts[i]);
+            }
+            if (sampled[sampled.length - 1] !== allPts[allPts.length - 1]) {
+                sampled.push(allPts[allPts.length - 1]);
+            }
+
+            var minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+            for (var j = 0; j < sampled.length; j++) {
+                if (sampled[j].lng < minLng) minLng = sampled[j].lng;
+                if (sampled[j].lng > maxLng) maxLng = sampled[j].lng;
+                if (sampled[j].lat < minLat) minLat = sampled[j].lat;
+                if (sampled[j].lat > maxLat) maxLat = sampled[j].lat;
+            }
+
+            var cw = stMinimapCanvas.width;
+            var ch = stMinimapCanvas.height;
+            var pad = 6;
+            var drawW = cw - pad * 2;
+            var drawH = ch - pad * 2;
+            var lngRange = maxLng - minLng || 1;
+            var latRange = maxLat - minLat || 1;
+            var scale = Math.min(drawW / lngRange, drawH / latRange);
+            var offsetX = pad + (drawW - lngRange * scale) / 2;
+            var offsetY = pad + (drawH - latRange * scale) / 2;
+
+            stMinimapPoints = sampled.map(function (p) {
+                return {
+                    x: offsetX + (p.lng - minLng) * scale,
+                    y: offsetY + (maxLat - p.lat) * scale,
+                    mile: p.mile
+                };
+            });
+
+            stUpdateMinimap(0);
+        })();
+
+        function stUpdateMinimap(currentMile) {
+            var ctx = stMinimapCtx;
+            var cw = stMinimapCanvas.width;
+            var ch = stMinimapCanvas.height;
+            ctx.clearRect(0, 0, cw, ch);
+
+            // Find split point
+            var splitIdx = 0;
+            for (var i = 0; i < stMinimapPoints.length; i++) {
+                if (stMinimapPoints[i].mile <= currentMile) splitIdx = i;
+                else break;
+            }
+
+            // Future trail (dim)
+            if (splitIdx < stMinimapPoints.length - 1) {
+                ctx.beginPath();
+                ctx.moveTo(stMinimapPoints[splitIdx].x, stMinimapPoints[splitIdx].y);
+                for (var f = splitIdx + 1; f < stMinimapPoints.length; f++) {
+                    ctx.lineTo(stMinimapPoints[f].x, stMinimapPoints[f].y);
+                }
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Past trail
+            if (splitIdx > 0) {
+                ctx.beginPath();
+                ctx.moveTo(stMinimapPoints[0].x, stMinimapPoints[0].y);
+                for (var p = 1; p <= splitIdx; p++) {
+                    ctx.lineTo(stMinimapPoints[p].x, stMinimapPoints[p].y);
+                }
+                ctx.strokeStyle = '#5A7AFF';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Interpolate dot position
+            var dotX = stMinimapPoints[splitIdx].x;
+            var dotY = stMinimapPoints[splitIdx].y;
+            if (splitIdx < stMinimapPoints.length - 1) {
+                var fromMile = stMinimapPoints[splitIdx].mile;
+                var toMile = stMinimapPoints[splitIdx + 1].mile;
+                if (currentMile > fromMile && toMile > fromMile) {
+                    var t = (currentMile - fromMile) / (toMile - fromMile);
+                    dotX += (stMinimapPoints[splitIdx + 1].x - dotX) * t;
+                    dotY += (stMinimapPoints[splitIdx + 1].y - dotY) * t;
+                }
+            }
+
+            // Current position dot
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#5A7AFF';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        // ══════════════════════════════════════
         // Story
         // ══════════════════════════════════════
         (function initStory() {
@@ -882,14 +992,6 @@
                     '<span class="stat-item">' + s + '</span>';
             }).join('');
 
-            // Hero image from last day
-            var lastPhoto = coordinates[coordinates.length - 1].photo_url;
-            if (lastPhoto) {
-                var heroImg = document.getElementById('hero-image');
-                heroImg.src = lastPhoto;
-                heroImg.style.display = '';
-                heroImg.onerror = function () { this.style.display = 'none'; };
-            }
 
             // Generate day cards
             var cumulativeMiles = 0;
@@ -899,7 +1001,7 @@
                 var dateStr = d.start_date_local.substring(0, 10);
                 var dayNum = dayNumber(d);
                 return '<div class="day-card" data-day="' + i + '" data-mile="' + cumulativeMiles.toFixed(0) + '" data-daynum="' + dayNum + '">' +
-                    '<img class="day-photo" src="' + d.photo_url + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
+                    '<img class="day-photo" src="' + d.photo_url + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
                     '<div class="day-label">Day ' + dayNum + ' &middot; ' + dateStr + ' &middot; Mile ' + Math.round(cumulativeMiles).toLocaleString() + '</div>' +
                     '<h3>' + d.name.replace(/^Day\s+\d+:\s*/i, '') + '</h3>' +
                     '<div class="day-stats">' +
@@ -915,34 +1017,11 @@
             }).join('');
             document.getElementById('day-cards').innerHTML = cardsHTML;
 
-            // Populate jump-to-day dropdown
-            var jumpSelect = document.getElementById('day-jump');
-            var jumpCumMiles = 0;
-            coordinates.forEach(function (d, i) {
-                jumpCumMiles += d.distance_miles;
-                var opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = 'Day ' + dayNumber(d) + ' \u00b7 ' + d.start_date_local.substring(0, 10) + ' \u00b7 Mi ' + Math.round(jumpCumMiles);
-                jumpSelect.appendChild(opt);
-            });
-            jumpSelect.addEventListener('change', function () {
-                if (this.value === '') return;
-                var dayIdx = parseInt(this.value);
-                var card = document.querySelector('.day-card[data-day="' + dayIdx + '"]');
-                if (card) {
-                    if (isMobile) {
-                        document.getElementById('story').scrollTo({ top: card.offsetTop - 60, behavior: 'smooth' });
-                    } else {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }
-                this.value = '';
-            });
 
             // Map
             var storyMap = new mapboxgl.Map({
                 container: 'st-map',
-                style: 'mapbox://styles/mapbox/outdoors-v11',
+                style: 'mapbox://styles/mapbox/outdoors-v12',
                 center: [-118.5, 36.5],
                 zoom: 4,
                 pitch: isMobile ? 0 : 30
@@ -1048,8 +1127,9 @@
                 var card = document.querySelector('.day-card[data-day="' + dayIdx + '"]');
                 var mile = card.dataset.mile;
                 var dayNum = card.dataset.daynum;
-                document.getElementById('day-counter').textContent =
+                document.getElementById('day-counter-text').textContent =
                     'Day ' + dayNum + ' of ' + totalDays + ' \u00b7 Mile ' + parseInt(mile).toLocaleString() + ' of ' + commas(totalMiles);
+                stUpdateMinimap(parseInt(mile));
             }
 
             var storyEl = document.getElementById('story');
@@ -1063,6 +1143,15 @@
                     : storyEl.scrollHeight + storyEl.offsetTop - window.innerHeight;
             }
 
+            var stBackBtn = document.getElementById('st-back-top');
+            stBackBtn.addEventListener('click', function () {
+                if (isMobile) {
+                    storyEl.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
             scrollTarget.addEventListener('scroll', function () {
                 if (document.getElementById('story-view').style.display === 'none') return;
                 var scrollTop = isMobile ? storyEl.scrollTop : window.scrollY;
@@ -1071,6 +1160,7 @@
                     var counter = document.getElementById('day-counter');
                     if (counter.classList.contains('scroll-hint')) counter.classList.remove('scroll-hint');
                 }
+                stBackBtn.style.display = scrollTop > 200 ? '' : 'none';
                 var scrollHeight = stGetScrollMax();
                 var progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100 : 0;
                 stProgressFill.style.width = progress + '%';
@@ -1139,7 +1229,7 @@
         var foCurrentSection = '';
         var foToastTimers = [];
 
-        var FO_MS_PER_POINT = 3.3;
+        var FO_MS_PER_POINT = 4.5;
         var FO_LOOK_AHEAD = 25;
         var FO_HALF_LIFE = 0.25;
         var FO_BEARING_HALF_LIFE = 1.2;
@@ -1285,7 +1375,6 @@
             foCurrentSection = FO_PCT_SECTIONS[0].name;
             document.getElementById('fo-playBtn').textContent = 'Start';
             document.getElementById('fo-playBtn').classList.remove('active');
-            document.getElementById('fo-restartBtn').style.display = 'none';
             document.getElementById('fo-progress-fill').style.width = '0%';
             var campSrc = foMap.getSource('campsites');
             if (campSrc) campSrc.setData({ type: 'FeatureCollection', features: [] });
@@ -1313,8 +1402,8 @@
             foTransitionUntil = performance.now() + 1200;
             foPendingStyleLoad = true;
             foMap.setStyle(foIsMapView
-                ? 'mapbox://styles/mapbox/outdoors-v11'
-                : 'mapbox://styles/mapbox/satellite-streets-v11');
+                ? 'mapbox://styles/mapbox/outdoors-v12'
+                : 'mapbox://styles/mapbox/satellite-streets-v12');
         }
 
         function foAddTrailLayers() {
@@ -1558,6 +1647,7 @@
             var panel = document.getElementById('fo-day-info');
             var photo = document.getElementById('fo-info-photo');
             photo.src = d.photo_url;
+            photo.alt = d.name;
             photo.style.display = '';
             document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
             document.getElementById('fo-info-name').textContent = d.name;
@@ -1604,7 +1694,7 @@
             // Create map
             foMap = new mapboxgl.Map({
                 container: 'fo-map',
-                style: 'mapbox://styles/mapbox/satellite-streets-v11',
+                style: 'mapbox://styles/mapbox/satellite-streets-v12',
                 center: foAllPoints[0],
                 zoom: 13,
                 pitch: foPitch,
@@ -1763,7 +1853,6 @@
                 if (idx >= foAllPoints.length - 1) {
                     foIsPaused = true;
                     document.getElementById('fo-playBtn').textContent = 'Done';
-                    document.getElementById('fo-restartBtn').style.display = '';
                     return;
                 }
 
