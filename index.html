@@ -32,7 +32,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 20px;
+            height: 28px;
             z-index: 30;
             cursor: pointer;
             background: transparent;
@@ -43,38 +43,41 @@
             position: absolute;
             left: 0;
             right: 0;
-            top: 9px;
-            height: 2px;
+            top: 12px;
+            height: 4px;
             background: rgba(0, 0, 0, 0.08);
+            transition: height 0.15s, top 0.15s;
         }
+
+        #st-progress-bar:hover::before { height: 6px; top: 11px; }
 
         #st-progress-fill {
             position: absolute;
             left: 0;
-            top: 9px;
-            height: 2px;
+            top: 12px;
+            height: 4px;
             width: 0%;
             background: #1a1a1a;
             pointer-events: none;
-            transition: width 0.15s linear;
+            transition: width 0.1s linear, height 0.15s, top 0.15s;
         }
 
         #st-progress-fill::after {
             content: '';
             position: absolute;
-            right: -5px;
+            right: -7px;
             top: 50%;
             transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
             background: #1a1a1a;
             border-radius: 50%;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-            opacity: 0;
-            transition: opacity 0.2s;
+            transition: width 0.15s, height 0.15s;
         }
 
-        #st-progress-bar:hover #st-progress-fill::after { opacity: 1; }
+        #st-progress-bar:hover #st-progress-fill { height: 6px; top: 11px; }
+        #st-progress-bar:hover #st-progress-fill::after { width: 16px; height: 16px; right: -8px; }
 
         #st-map-container {
             position: fixed;
@@ -306,8 +309,10 @@
             cursor: pointer;
             transition: all 0.2s;
             border: none;
+            border-radius: 0;
             background: none;
             font-family: inherit;
+            outline: none;
         }
 
         .nav-radio-btn:not(:disabled):hover { color: #fff; background: rgba(255,255,255,0.1); }
@@ -348,15 +353,15 @@
 
             #st-progress-bar {
                 position: relative;
-                height: 24px;
+                height: 36px;
                 flex-shrink: 0;
                 background: transparent;
                 border-bottom: 1px solid rgba(0,0,0,0.08);
             }
 
-            #st-progress-bar::before { top: 11px; height: 2px; background: rgba(0,0,0,0.08); }
-            #st-progress-fill { top: 11px; height: 2px; }
-            #st-progress-fill::after { opacity: 1; width: 12px; height: 12px; right: -6px; }
+            #st-progress-bar::before { top: 14px; height: 8px; background: rgba(0,0,0,0.06); }
+            #st-progress-fill { top: 14px; height: 8px; }
+            #st-progress-fill::after { width: 22px; height: 22px; right: -11px; }
 
             #story {
                 margin-left: 0;
@@ -516,16 +521,31 @@
         #fo-controls button:hover { background: rgba(255, 255, 255, 0.15); }
         #fo-controls button.active { background: white; color: #333; }
 
+        #fo-controls .nav-radio-btn {
+            border: none;
+            border-radius: 0;
+            padding: 5px 14px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        #fo-controls .nav-radio-btn:hover { background: rgba(255,255,255,0.1); }
+        #fo-controls .nav-radio-btn.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+
         #fo-day-info {
             position: absolute;
-            top: 16px;
+            top: 50%;
+            transform: translateY(-50%) translateX(20px);
             right: 16px;
-            width: 420px;
+            width: min(32%, calc(100vw - 40px));
+            max-width: 520px;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
             z-index: 10;
             font-family: 'EB Garamond', Georgia, serif;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 6px;
-            overflow: hidden;
+            overflow-x: hidden;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(8px);
             opacity: 0;
@@ -533,18 +553,19 @@
             transition: opacity 0.5s, transform 0.5s;
         }
 
-        #fo-day-info.visible { opacity: 1; transform: translateX(0); }
+        #fo-day-info.visible { opacity: 1; transform: translateY(-50%) translateX(0); }
 
         #fo-day-info img {
             width: 100%;
-            height: 260px;
+            height: 35vh;
+            max-height: 400px;
             object-fit: cover;
         }
 
-        #fo-day-info .info-body { padding: 18px 24px; }
+        #fo-day-info .info-body { padding: 22px 28px; }
 
         #fo-day-info .info-day-num {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-style: italic;
             color: #999;
         }
@@ -552,15 +573,15 @@
         #fo-day-info h5 {
             font-weight: 500;
             color: #1a1a1a;
-            margin: 3px 0 12px;
-            font-size: 1.25rem;
+            margin: 4px 0 16px;
+            font-size: 1.4rem;
         }
 
         #fo-day-info .info-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 14px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         #fo-day-info .info-stat {
@@ -571,22 +592,20 @@
         #fo-day-info .info-stat-val {
             font-weight: 600;
             color: #1a1a1a;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
         }
 
         #fo-day-info .info-stat-lbl {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #999;
         }
 
         #fo-day-info .info-desc {
-            font-size: 0.9rem;
-            line-height: 1.65;
+            font-size: 1rem;
+            line-height: 1.75;
             color: #555;
-            max-height: 200px;
-            overflow-y: auto;
             white-space: pre-line;
         }
 
@@ -678,7 +697,7 @@
                 text-overflow: ellipsis;
             }
 
-            #fo-day-info .info-stats { gap: 2px; margin-bottom: 0; }
+            #fo-day-info .info-stats { grid-template-columns: repeat(5, 1fr); gap: 2px; margin-bottom: 0; }
             #fo-day-info .info-stat { padding: 2px 2px; }
             #fo-day-info .info-stat-val { font-size: 0.85rem; }
             #fo-day-info .info-stat-lbl { font-size: 0.5rem; }
@@ -777,15 +796,23 @@
                 <div class="info-stats">
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-miles"></div>
-                        <div class="info-stat-lbl">Miles</div>
+                        <div class="info-stat-lbl">miles</div>
                     </div>
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-vert"></div>
-                        <div class="info-stat-lbl">Vert</div>
+                        <div class="info-stat-lbl">ft gain</div>
                     </div>
                     <div class="info-stat">
                         <div class="info-stat-val" id="fo-info-pace"></div>
-                        <div class="info-stat-lbl">Pace</div>
+                        <div class="info-stat-lbl">per mi</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-val" id="fo-info-moving"></div>
+                        <div class="info-stat-lbl">moving</div>
+                    </div>
+                    <div class="info-stat">
+                        <div class="info-stat-val" id="fo-info-elapsed"></div>
+                        <div class="info-stat-lbl">elapsed</div>
                     </div>
                 </div>
                 <div id="fo-info-desc" class="info-desc"></div>
@@ -1207,6 +1234,7 @@
         var foMapViewZoom = 10;
         var foIsMapView = false;
         var foPitch = isMobile ? 30 : 60;
+        var foPadding = isMobile ? {} : { right: Math.round(window.innerWidth * 0.17) };
         var foTransitionUntil = 0;
         var foLastFrameTime = 0;
         var foPendingStyleLoad = false;
@@ -1382,7 +1410,7 @@
             if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [foRawPoints[0]] } });
             var hikerSrc = foMap.getSource('hiker');
             if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[0] } });
-            foMap.jumpTo({ center: foAllPoints[0], pitch: foIsMapView ? 0 : foPitch, zoom: foFlyoverZoom, bearing: 0 });
+            foMap.jumpTo({ center: foAllPoints[0], pitch: foIsMapView ? 0 : foPitch, zoom: foFlyoverZoom, bearing: 0, padding: foPadding });
             foUpdateDayInfo(0);
             document.getElementById('fo-mile-counter').textContent = 'Mile 0 of ' + commas(foTotalMiles);
             foUpdateMinimap(0);
@@ -1460,9 +1488,9 @@
             });
 
             if (foIsMapView) {
-                foMap.easeTo({ pitch: 0, bearing: 0, zoom: foMapViewZoom, duration: 800 });
+                foMap.easeTo({ pitch: 0, bearing: 0, zoom: foMapViewZoom, duration: 800, padding: foPadding });
             } else {
-                foMap.easeTo({ pitch: foPitch, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800 });
+                foMap.easeTo({ pitch: foPitch, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800, padding: foPadding });
             }
         }
 
@@ -1652,8 +1680,10 @@
             document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
             document.getElementById('fo-info-name').textContent = d.name;
             document.getElementById('fo-info-miles').textContent = d.distance_miles.toFixed(1);
-            document.getElementById('fo-info-vert').textContent = commas(d.vert_feet) + ' ft';
+            document.getElementById('fo-info-vert').textContent = commas(d.vert_feet);
             document.getElementById('fo-info-pace').textContent = formatPace(d.pace);
+            document.getElementById('fo-info-moving').textContent = formatDuration(d.moving_time);
+            document.getElementById('fo-info-elapsed').textContent = formatDuration(d.elapsed_time);
             document.getElementById('fo-info-desc').textContent = d.description;
             panel.classList.remove('visible');
             setTimeout(function () { panel.classList.add('visible'); }, 50);
@@ -1800,9 +1830,9 @@
 
                 // Update camera
                 if (foIsMapView) {
-                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0, padding: foPadding });
                 } else {
-                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                    foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing, padding: foPadding });
                 }
 
                 // Update mile counter
@@ -1893,9 +1923,9 @@
 
                 if (performance.now() >= foTransitionUntil) {
                     if (foIsMapView) {
-                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
+                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0, padding: foPadding });
                     } else {
-                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing, padding: foPadding });
                     }
                 }
 
