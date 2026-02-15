@@ -1676,7 +1676,7 @@
                 }
                 if (sectionName && sectionName !== foCurrentSection) {
                     foCurrentSection = sectionName;
-                    foShowSectionToast(sectionName);
+                    if (!isMobile) foShowSectionToast(sectionName);
                 }
             }
             var d = coordinates[dayIdx];
@@ -1686,7 +1686,7 @@
             photo.alt = d.name;
             photo.style.display = '';
             document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
-            document.getElementById('fo-info-name').textContent = d.name;
+            document.getElementById('fo-info-name').textContent = d.name.replace(/^Day\s+\d+:\s*/i, '');
             document.getElementById('fo-info-miles').textContent = d.distance_miles.toFixed(1);
             document.getElementById('fo-info-vert').textContent = commas(d.vert_feet);
             document.getElementById('fo-info-pace').textContent = formatPace(d.pace);
