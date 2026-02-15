@@ -259,8 +259,8 @@
 
         .nav-radio-btn {
             display: block;
-            padding: 8px 20px;
-            font-size: 0.85rem;
+            padding: 4px 12px;
+            font-size: 0.75rem;
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             letter-spacing: 0.5px;
@@ -345,7 +345,7 @@
             }
 
             #st-nav { bottom: 16px; }
-            .nav-radio-btn { padding: 7px 16px; font-size: 0.8rem; }
+            .nav-radio-btn { padding: 4px 12px; font-size: 0.75rem; }
         }
 
         /* ────────────────────────────────────
@@ -436,11 +436,11 @@
 
         #fo-controls button {
             background: none;
-            border: 2px solid white;
+            border: 1.5px solid white;
             color: white;
-            padding: 6px 18px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             letter-spacing: 1px;
@@ -449,13 +449,7 @@
             white-space: nowrap;
         }
 
-        #fo-controls .ctrl-sm {
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            border-width: 1.5px;
-        }
-
-        #fo-controls .ctrl-sm svg {
+        #fo-controls .zoom-btn svg {
             width: 14px;
             height: 14px;
             vertical-align: -2px;
@@ -651,17 +645,11 @@
                 letter-spacing: 0.5px;
             }
 
-            #fo-controls .ctrl-sm {
-                padding: 3px 7px;
-                font-size: 0.65rem;
-                border-width: 1px;
-            }
-
             #fo-controls .divider { height: 14px; }
 
             #fo-controls .nav-radio .nav-radio-btn {
-                padding: 5px 12px;
-                font-size: 0.75rem;
+                padding: 4px 10px;
+                font-size: 0.7rem;
             }
 
             #fo-mile-counter {
@@ -673,11 +661,6 @@
 
         @media (max-width: 380px) {
             #fo-day-info h5 { font-size: 0.8rem; }
-
-            #fo-controls .ctrl-sm {
-                padding: 2px 5px;
-                font-size: 0.6rem;
-            }
 
             #fo-controls button {
                 padding: 4px 10px;
@@ -760,18 +743,18 @@
             <div class="divider"></div>
             <button id="fo-playBtn" onclick="foTogglePlay()">Start</button>
             <div class="divider"></div>
-            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(0)">.25x</button>
-            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(1)">.5x</button>
-            <button class="ctrl-sm speed-btn active" onclick="foSetSpeed(2)">1x</button>
-            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(3)">2x</button>
-            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(4)">4x</button>
-            <button class="ctrl-sm speed-btn" onclick="foSetSpeed(5)">8x</button>
+            <button class="speed-btn" onclick="foSetSpeed(0)">.25x</button>
+            <button class="speed-btn" onclick="foSetSpeed(1)">.5x</button>
+            <button class="speed-btn active" onclick="foSetSpeed(2)">1x</button>
+            <button class="speed-btn" onclick="foSetSpeed(3)">2x</button>
+            <button class="speed-btn" onclick="foSetSpeed(4)">4x</button>
+            <button class="speed-btn" onclick="foSetSpeed(5)">8x</button>
             <div class="divider"></div>
-            <button class="ctrl-sm view-btn active" onclick="foSetView('3d')">3D</button>
-            <button class="ctrl-sm view-btn" onclick="foSetView('map')">Map</button>
+            <button class="view-btn active" onclick="foSetView('3d')">3D</button>
+            <button class="view-btn" onclick="foSetView('map')">Map</button>
             <div class="divider"></div>
-            <button class="ctrl-sm" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
-            <button class="ctrl-sm" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
+            <button class="zoom-btn" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
+            <button class="zoom-btn" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
             <div class="divider"></div>
             <button id="fo-restartBtn" onclick="foRestart()" style="display:none">Restart</button>
         </div>
@@ -817,8 +800,7 @@
             var summaryStats = [
                 totalDays + ' days',
                 commas(totalMiles) + ' miles',
-                commas(totalVert) + ' ft',
-                commas(totalCals) + ' cal'
+                commas(totalVert) + ' ft'
             ];
             document.getElementById('hero-summary').innerHTML = summaryStats.map(function (s, i) {
                 return (i > 0 ? '<span class="stat-sep">\u00b7</span>' : '') +
@@ -1072,33 +1054,64 @@
         }
 
         function foCampsiteIcon() {
-            var size = 40;
-            var r = size / 2;
+            var size = 48;
+            var cx = size / 2, cy = size / 2;
             var canvas = document.createElement('canvas');
             canvas.width = size;
             canvas.height = size;
             var ctx = canvas.getContext('2d');
-            // Outer circle — subtle halo
+
+            // Drop shadow
+            ctx.shadowColor = 'rgba(0,0,0,0.25)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetY = 1;
+
+            // White pin circle
             ctx.beginPath();
-            ctx.arc(r, r, r - 1, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
             ctx.fill();
-            // Inner disc
+            ctx.shadowColor = 'transparent';
+
+            // Tent body
             ctx.beginPath();
-            ctx.arc(r, r, 8, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            // Tent shape inside disc
-            ctx.beginPath();
-            ctx.moveTo(r, r - 4.5);
-            ctx.lineTo(r + 4, r + 3);
-            ctx.lineTo(r - 4, r + 3);
+            ctx.moveTo(cx, cy - 7);
+            ctx.lineTo(cx + 7, cy + 5);
+            ctx.lineTo(cx - 7, cy + 5);
             ctx.closePath();
-            ctx.fillStyle = 'rgba(80,80,80,0.6)';
+            ctx.fillStyle = '#5A7AFF';
+            ctx.globalAlpha = 0.8;
             ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Tent opening
+            ctx.beginPath();
+            ctx.moveTo(cx - 2, cy + 5);
+            ctx.lineTo(cx, cy + 1);
+            ctx.lineTo(cx + 2, cy + 5);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // Flag pole
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 7);
+            ctx.lineTo(cx, cy - 12);
+            ctx.strokeStyle = '#5A7AFF';
+            ctx.lineWidth = 1.2;
+            ctx.globalAlpha = 0.8;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // Small flag
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 12);
+            ctx.lineTo(cx + 4, cy - 10.5);
+            ctx.lineTo(cx, cy - 9);
+            ctx.fillStyle = '#5A7AFF';
+            ctx.globalAlpha = 0.7;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
             return { width: size, height: size, data: ctx.getImageData(0, 0, size, size).data };
         }
 
@@ -1124,6 +1137,7 @@
             foIsPaused = !foIsPaused;
             document.getElementById('fo-playBtn').textContent = foIsPaused ? 'Start' : 'Pause';
             document.getElementById('fo-playBtn').classList.toggle('active', !foIsPaused);
+            if (!foIsPaused && foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
         function foSetSpeed(idx) {
@@ -1150,6 +1164,13 @@
             document.getElementById('fo-progress-fill').style.width = '0%';
             var campSrc = foMap.getSource('campsites');
             if (campSrc) campSrc.setData({ type: 'FeatureCollection', features: [] });
+            var trailSrc = foMap.getSource('trail');
+            if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [foRawPoints[0]] } });
+            var hikerSrc = foMap.getSource('hiker');
+            if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[0] } });
+            foMap.jumpTo({ center: foAllPoints[0], pitch: foPitch, zoom: foFlyoverZoom, bearing: 0 });
+            foUpdateDayInfo(0);
+            document.getElementById('fo-mile-counter').textContent = 'Mile 0 of ' + commas(foTotalMiles);
             if (foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
@@ -1207,7 +1228,7 @@
             var currentDayIdx = foGetCurrentDay(idx);
             foMap.addSource('campsites', { type: 'geojson', data: foCampsiteFeatures(currentDayIdx) });
             foMap.addLayer({ id: 'campsites', type: 'symbol', source: 'campsites',
-                layout: { 'icon-image': 'campsite', 'icon-size': 0.6, 'icon-allow-overlap': true },
+                layout: { 'icon-image': 'campsite', 'icon-size': 0.7, 'icon-allow-overlap': true },
                 paint: { 'icon-opacity': 0.7 }
             });
 
@@ -1339,7 +1360,7 @@
                     type: 'FeatureCollection', features: []
                 }});
                 foMap.addLayer({ id: 'campsites', type: 'symbol', source: 'campsites',
-                    layout: { 'icon-image': 'campsite', 'icon-size': 0.6, 'icon-allow-overlap': true },
+                    layout: { 'icon-image': 'campsite', 'icon-size': 0.7, 'icon-allow-overlap': true },
                     paint: { 'icon-opacity': 0.7 }
                 });
 
@@ -1391,7 +1412,7 @@
                 var trailSrc = foMap.getSource('trail');
                 var hikerSrc = foMap.getSource('hiker');
                 if (trailSrc) trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: foTrailCoords } });
-                if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foAllPoints[targetIdx] } });
+                if (hikerSrc) hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foTrailCoords[foTrailCoords.length - 1] } });
 
                 var dayIdx = foGetCurrentDay(targetIdx);
                 foUpdateDayInfo(dayIdx);
@@ -1487,7 +1508,7 @@
                     }
                 }
                 trailSrc.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: foTrailCoords } });
-                hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [targetLng, targetLat] } });
+                hikerSrc.setData({ type: 'Feature', geometry: { type: 'Point', coordinates: foTrailCoords[foTrailCoords.length - 1] } });
 
                 if (performance.now() >= foTransitionUntil) {
                     if (foIsMapView) {
@@ -1559,7 +1580,10 @@
                     document.getElementById('fo-playBtn').classList.remove('active');
                 }
                 if (isMobile) {
-                    document.getElementById('story').scrollTop = storyScrollPos;
+                    var savedPos = storyScrollPos;
+                    requestAnimationFrame(function () {
+                        document.getElementById('story').scrollTop = savedPos;
+                    });
                 } else {
                     window.scrollTo(0, storyScrollPos);
                 }
@@ -1572,6 +1596,18 @@
 
         window.addEventListener('hashchange', handleHash);
         handleHash();
+
+        // Mobile notice (once per session)
+        if (isMobile && !sessionStorage.getItem('mobile-noted')) {
+            sessionStorage.setItem('mobile-noted', '1');
+            var note = document.createElement('div');
+            note.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,0.75);color:rgba(255,255,255,0.9);padding:10px 20px;border-radius:20px;font-size:0.8rem;font-family:"EB Garamond",Georgia,serif;font-style:italic;backdrop-filter:blur(8px);opacity:0;transition:opacity 0.5s;pointer-events:none;text-align:center;max-width:90vw';
+            note.textContent = 'Some features like 3D terrain may be limited on mobile';
+            document.body.appendChild(note);
+            setTimeout(function () { note.style.opacity = '1'; }, 200);
+            setTimeout(function () { note.style.opacity = '0'; }, 4500);
+            setTimeout(function () { note.remove(); }, 5000);
+        }
     </script>
 
 </body>
