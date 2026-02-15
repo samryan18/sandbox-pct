@@ -259,8 +259,8 @@
 
         .nav-radio-btn {
             display: block;
-            padding: 8px 20px;
-            font-size: 0.85rem;
+            padding: 4px 12px;
+            font-size: 0.75rem;
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             letter-spacing: 0.5px;
@@ -345,7 +345,7 @@
             }
 
             #st-nav { bottom: 16px; }
-            .nav-radio-btn { padding: 7px 16px; font-size: 0.8rem; }
+            .nav-radio-btn { padding: 4px 12px; font-size: 0.75rem; }
         }
 
         /* ────────────────────────────────────
@@ -447,12 +447,6 @@
             font-family: 'EB Garamond', Georgia, serif;
             transition: all 0.2s;
             white-space: nowrap;
-        }
-
-        #fo-controls .ctrl-primary {
-            padding: 5px 16px;
-            font-size: 0.8rem;
-            border-width: 2px;
         }
 
         #fo-controls .zoom-btn svg {
@@ -654,8 +648,8 @@
             #fo-controls .divider { height: 14px; }
 
             #fo-controls .nav-radio .nav-radio-btn {
-                padding: 5px 12px;
-                font-size: 0.75rem;
+                padding: 4px 10px;
+                font-size: 0.7rem;
             }
 
             #fo-mile-counter {
@@ -747,7 +741,7 @@
         <div id="fo-controls">
             <div class="nav-radio"><a class="nav-radio-btn" onclick="location.hash='';return false" href="#">Log</a><span class="nav-radio-btn active">Flyover</span></div>
             <div class="divider"></div>
-            <button id="fo-playBtn" class="ctrl-primary" onclick="foTogglePlay()">Start</button>
+            <button id="fo-playBtn" onclick="foTogglePlay()">Start</button>
             <div class="divider"></div>
             <button class="speed-btn" onclick="foSetSpeed(0)">.25x</button>
             <button class="speed-btn" onclick="foSetSpeed(1)">.5x</button>
@@ -762,7 +756,7 @@
             <button class="zoom-btn" onclick="foAdjustZoom(-1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/></svg></button>
             <button class="zoom-btn" onclick="foAdjustZoom(1)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/><line x1="5" y1="7" x2="9" y2="7"/><line x1="7" y1="5" x2="7" y2="9"/></svg></button>
             <div class="divider"></div>
-            <button id="fo-restartBtn" class="ctrl-primary" onclick="foRestart()" style="display:none">Restart</button>
+            <button id="fo-restartBtn" onclick="foRestart()" style="display:none">Restart</button>
         </div>
     </div>
 
