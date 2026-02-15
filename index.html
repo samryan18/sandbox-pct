@@ -152,20 +152,10 @@
             line-height: 1.4;
         }
 
-        #st-back-top {
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 0 0 0 4px;
-            margin-left: -4px;
-            font-size: 0.9rem;
-            color: rgba(0, 0, 0, 0.45);
-            transition: color 0.2s;
-            font-family: inherit;
-            line-height: 1;
-            display: none;
-        }
-        #st-back-top:hover { color: rgba(0, 0, 0, 0.7); }
+        #day-counter.clickable { cursor: pointer; }
+        #day-counter.clickable:hover { background: rgba(255, 255, 255, 0.98); }
+        #day-counter .back-hint { display: none; font-size: 0.65rem; color: rgba(0,0,0,0.3); margin-top: 2px; }
+        #day-counter.clickable .back-hint { display: block; }
 
         @keyframes scrollHintBounce {
             0%, 100% { transform: translateY(0); }
@@ -799,7 +789,7 @@
 
         <div id="st-map-container">
             <div id="st-map"></div>
-            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span></span><button id="st-back-top" title="Back to start">&#8593;</button></div>
+            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span><span class="back-hint">Back to start</span></span></div>
         </div>
 
         <div id="story">
@@ -1217,8 +1207,9 @@
                     : storyEl.scrollHeight + storyEl.offsetTop - window.innerHeight;
             }
 
-            var stBackBtn = document.getElementById('st-back-top');
-            stBackBtn.addEventListener('click', function () {
+            var dayCounter = document.getElementById('day-counter');
+            dayCounter.addEventListener('click', function () {
+                if (!dayCounter.classList.contains('clickable')) return;
                 if (isMobile) {
                     storyEl.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
@@ -1231,10 +1222,9 @@
                 var scrollTop = isMobile ? storyEl.scrollTop : window.scrollY;
                 // Remove scroll hint on first scroll
                 if (scrollTop > 10) {
-                    var counter = document.getElementById('day-counter');
-                    if (counter.classList.contains('scroll-hint')) counter.classList.remove('scroll-hint');
+                    if (dayCounter.classList.contains('scroll-hint')) dayCounter.classList.remove('scroll-hint');
                 }
-                stBackBtn.style.display = scrollTop > 200 ? '' : 'none';
+                dayCounter.classList.toggle('clickable', scrollTop > 200);
                 var scrollHeight = stGetScrollMax();
                 var progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100 : 0;
                 stProgressFill.style.width = progress + '%';
