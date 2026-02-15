@@ -1124,6 +1124,7 @@
             foIsPaused = !foIsPaused;
             document.getElementById('fo-playBtn').textContent = foIsPaused ? 'Start' : 'Pause';
             document.getElementById('fo-playBtn').classList.toggle('active', !foIsPaused);
+            if (!foIsPaused && foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
         function foSetSpeed(idx) {
@@ -1559,7 +1560,10 @@
                     document.getElementById('fo-playBtn').classList.remove('active');
                 }
                 if (isMobile) {
-                    document.getElementById('story').scrollTop = storyScrollPos;
+                    var savedPos = storyScrollPos;
+                    requestAnimationFrame(function () {
+                        document.getElementById('story').scrollTop = savedPos;
+                    });
                 } else {
                     window.scrollTo(0, storyScrollPos);
                 }
