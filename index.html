@@ -10,11 +10,11 @@
       gtag('js', new Date());
       gtag('config', 'G-H792D7W78P');
     </script>
-    <title>PCT by SLR</title>
+    <title>Pacific Crest Trail, 2021</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9B%B0</text></svg>">
-    <meta property="og:title" content="PCT by SLR">
+    <meta property="og:title" content="Pacific Crest Trail, 2021">
     <meta property="og:description" content="2,751 miles on the Pacific Crest Trail">
     <meta property="og:image" content="https://dgtzuqphqg23d.cloudfront.net/AFrhQRV2--xbh0bW-yhip5ELcVo_wRuultpkAviV4K0-768x576.jpg">
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
@@ -42,9 +42,11 @@
             right: 0;
             height: 28px;
             z-index: 30;
-            cursor: pointer;
+            cursor: grab;
             background: transparent;
         }
+
+        #st-progress-bar:active { cursor: grabbing; }
 
         #st-progress-bar::before {
             content: '';
@@ -93,6 +95,29 @@
             top: 2px;
             width: 57%;
             bottom: 0;
+            background: #e8ecf0;
+        }
+
+        #st-map-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 32px;
+            height: 32px;
+            margin: -16px 0 0 -16px;
+            border: 2px solid rgba(0,0,0,0.08);
+            border-top-color: rgba(0,0,0,0.25);
+            border-radius: 50%;
+            animation: mapSpin 0.8s linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #st-map-container.loaded::before { display: none; }
+
+        @keyframes mapSpin {
+            to { transform: rotate(360deg); }
         }
 
         #st-map {
@@ -127,20 +152,10 @@
             line-height: 1.4;
         }
 
-        #st-back-top {
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 0 0 0 4px;
-            margin-left: -4px;
-            font-size: 0.9rem;
-            color: rgba(0, 0, 0, 0.3);
-            transition: color 0.2s;
-            font-family: inherit;
-            line-height: 1;
-            display: none;
-        }
-        #st-back-top:hover { color: rgba(0, 0, 0, 0.6); }
+        #day-counter.clickable { cursor: pointer; }
+        #day-counter.clickable:hover { background: rgba(255, 255, 255, 0.98); }
+        #day-counter .back-hint { display: none; font-size: 0.65rem; color: rgba(0,0,0,0.3); margin-top: 2px; }
+        #day-counter.clickable .back-hint { display: block; }
 
         @keyframes scrollHintBounce {
             0%, 100% { transform: translateY(0); }
@@ -290,6 +305,12 @@
             transform: translateY(0);
         }
 
+        .story-footer .footer-photo {
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 24px;
+        }
+
         .story-footer h2 {
             font-weight: 400;
             color: #1a1a1a;
@@ -434,9 +455,11 @@
             right: 0;
             height: 28px;
             z-index: 20;
-            cursor: pointer;
+            cursor: grab;
             background: transparent;
         }
+
+        #fo-progress-bar:active { cursor: grabbing; }
 
         #fo-progress-bar::before {
             content: '';
@@ -528,6 +551,9 @@
 
         #fo-controls button:hover { background: rgba(255, 255, 255, 0.15); }
         #fo-controls button.active { background: white; color: #333; }
+
+        #fo-playBtn { background: rgba(255, 255, 255, 0.2); }
+        #fo-playBtn:hover { background: rgba(255, 255, 255, 0.3); }
 
         #fo-controls .nav-radio-btn {
             border: none;
@@ -759,11 +785,11 @@
 
     <!-- ── Story View ── -->
     <div id="story-view">
-        <div id="st-progress-bar"><div id="st-progress-fill"></div></div>
+        <div id="st-progress-bar" title="Drag to scrub through the trail"><div id="st-progress-fill"></div></div>
 
         <div id="st-map-container">
             <div id="st-map"></div>
-            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span></span><button id="st-back-top" title="Back to start">&#8593;</button></div>
+            <div id="day-counter" class="scroll-hint"><canvas id="st-minimap" width="120" height="180"></canvas><span id="day-counter-text">Scroll to begin <span class="scroll-arrow">&#8595;</span><span class="back-hint">Back to start</span></span></div>
         </div>
 
         <div id="story">
@@ -775,6 +801,7 @@
             </div>
             <div id="day-cards"></div>
             <div class="story-footer">
+                <img class="footer-photo" src="images/finish.jpg" alt="Northern Terminus of the Pacific Crest Trail">
                 <h2>What a world.</h2>
                 <p>Mexico to Canada &middot; 2,751 miles &middot; 442,268 ft of climbing &middot; 6 pairs of shoes</p>
             </div>
@@ -785,10 +812,10 @@
 
     <!-- ── Flyover View ── -->
     <div id="flyover-view" style="display:none">
-        <div id="fo-progress-bar"><div id="fo-progress-fill"></div></div>
+        <div id="fo-progress-bar" title="Drag to scrub through the trail"><div id="fo-progress-fill"></div></div>
         <div id="fo-map"></div>
 
-        <div id="fo-compass">
+        <div id="fo-compass" title="Compass">
             <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
                 <polygon points="24,6 28,24 24,22 20,24" fill="#fff" opacity="0.95"/>
                 <polygon points="24,42 20,24 24,26 28,24" fill="rgba(255,255,255,0.4)"/>
@@ -1035,8 +1062,9 @@
                 var pace = formatPace(d.pace);
                 var dateStr = d.start_date_local.substring(0, 10);
                 var dayNum = dayNumber(d);
+                var photoSrc = i === 0 ? 'images/start.jpg' : d.photo_url;
                 return '<div class="day-card" data-day="' + i + '" data-mile="' + cumulativeMiles.toFixed(0) + '" data-daynum="' + dayNum + '">' +
-                    '<img class="day-photo" src="' + d.photo_url + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
+                    '<img class="day-photo" src="' + photoSrc + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
                     '<div class="day-label">Day ' + dayNum + ' &middot; ' + dateStr + ' &middot; Mile ' + Math.round(cumulativeMiles).toLocaleString() + '</div>' +
                     '<h3>' + d.name.replace(/^Day\s+\d+:\s*/i, '') + '</h3>' +
                     '<div class="day-stats">' +
@@ -1065,6 +1093,7 @@
             // currentDay is now global as stCurrentDay
 
             storyMap.on('load', function () {
+                document.getElementById('st-map-container').classList.add('loaded');
                 if (!isMobile) {
                     storyMap.addSource('mapbox-dem', {
                         type: 'raster-dem',
@@ -1178,8 +1207,9 @@
                     : storyEl.scrollHeight + storyEl.offsetTop - window.innerHeight;
             }
 
-            var stBackBtn = document.getElementById('st-back-top');
-            stBackBtn.addEventListener('click', function () {
+            var dayCounter = document.getElementById('day-counter');
+            dayCounter.addEventListener('click', function () {
+                if (!dayCounter.classList.contains('clickable')) return;
                 if (isMobile) {
                     storyEl.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
@@ -1192,10 +1222,9 @@
                 var scrollTop = isMobile ? storyEl.scrollTop : window.scrollY;
                 // Remove scroll hint on first scroll
                 if (scrollTop > 10) {
-                    var counter = document.getElementById('day-counter');
-                    if (counter.classList.contains('scroll-hint')) counter.classList.remove('scroll-hint');
+                    if (dayCounter.classList.contains('scroll-hint')) dayCounter.classList.remove('scroll-hint');
                 }
-                stBackBtn.style.display = scrollTop > 200 ? '' : 'none';
+                dayCounter.classList.toggle('clickable', scrollTop > 200);
                 var scrollHeight = stGetScrollMax();
                 var progress = scrollHeight > 0 ? Math.min(Math.max(scrollTop / scrollHeight, 0), 1) * 100 : 0;
                 stProgressFill.style.width = progress + '%';
@@ -1682,7 +1711,7 @@
             var d = coordinates[dayIdx];
             var panel = document.getElementById('fo-day-info');
             var photo = document.getElementById('fo-info-photo');
-            photo.src = d.photo_url;
+            photo.src = dayIdx === 0 ? 'images/start.jpg' : d.photo_url;
             photo.alt = d.name;
             photo.style.display = '';
             document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
@@ -1988,7 +2017,7 @@
                 storyView.style.display = 'none';
                 flyoverView.style.display = '';
                 document.body.style.overflow = 'hidden';
-                document.title = 'PCT by SLR - Flyover';
+                document.title = 'Pacific Crest Trail, 2021 - Flyover';
                 initFlyover();
 
                 // Sync: jump flyover to current story day
@@ -2010,7 +2039,7 @@
                 flyoverView.style.display = 'none';
                 storyView.style.display = '';
                 document.body.style.overflow = '';
-                document.title = 'PCT by SLR';
+                document.title = 'Pacific Crest Trail, 2021';
                 foIsPaused = true;
                 if (document.getElementById('fo-playBtn')) {
                     document.getElementById('fo-playBtn').textContent = 'Start';
