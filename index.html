@@ -492,7 +492,7 @@
 
         /* Flyover mobile */
         @media (max-width: 768px) {
-            #fo-progress-bar { height: 6px; }
+            #fo-progress-bar { height: 12px; }
 
             #fo-compass {
                 width: 36px;
@@ -694,6 +694,7 @@
         mapboxgl.accessToken = 'pk.eyJ1Ijoic2FtcnlhbjE4IiwiYSI6ImNrNmZ4aXBwbDByOG0za3A2YmljN2RqZmoifQ.7uz_HttVRtIdjiq2V4oJKg';
 
         // Shared data
+        var isMobile = window.innerWidth <= 768;
         var totalMiles = coordinates.reduce(function (s, d) { return s + d.distance_miles; }, 0);
         var totalVert = coordinates.reduce(function (s, d) { return s + d.vert_feet; }, 0);
         var totalCals = coordinates.reduce(function (s, d) { return s + d.calories; }, 0);
@@ -751,19 +752,21 @@
                 style: 'mapbox://styles/mapbox/outdoors-v11',
                 center: [-118.5, 36.5],
                 zoom: 4,
-                pitch: 30
+                pitch: isMobile ? 0 : 30
             });
 
             var currentDay = -1;
 
             storyMap.on('load', function () {
-                storyMap.addSource('mapbox-dem', {
-                    type: 'raster-dem',
-                    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    tileSize: 512,
-                    maxzoom: 14
-                });
-                storyMap.setTerrain({ source: 'mapbox-dem', exaggeration: 1.3 });
+                if (!isMobile) {
+                    storyMap.addSource('mapbox-dem', {
+                        type: 'raster-dem',
+                        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                        tileSize: 512,
+                        maxzoom: 14
+                    });
+                    storyMap.setTerrain({ source: 'mapbox-dem', exaggeration: 1.3 });
+                }
 
                 storyMap.addSource('past-routes', {
                     type: 'geojson',
@@ -846,7 +849,7 @@
                 var bounds = lnglat.reduce(function (b, p) { return b.extend(p); },
                     new mapboxgl.LngLatBounds(lnglat[0], lnglat[0])
                 );
-                storyMap.fitBounds(bounds, { padding: 80, duration: 1500, pitch: 40 });
+                storyMap.fitBounds(bounds, { padding: 80, duration: 1500, pitch: isMobile ? 0 : 40 });
 
                 var card = document.querySelector('.day-card[data-day="' + dayIdx + '"]');
                 var mile = card.dataset.mile;
@@ -883,6 +886,7 @@
         var foFlyoverZoom = 13;
         var foMapViewZoom = 10;
         var foIsMapView = false;
+        var foPitch = isMobile ? 30 : 60;
         var foTransitionUntil = 0;
         var foLastFrameTime = 0;
         var foPendingStyleLoad = false;
@@ -985,19 +989,21 @@
         }
 
         function foAddTrailLayers() {
-            if (!foMap.getSource('mapbox-dem')) {
-                foMap.addSource('mapbox-dem', {
-                    type: 'raster-dem',
-                    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    tileSize: 512, maxzoom: 14
-                });
-            }
-            foMap.setTerrain({ source: 'mapbox-dem', exaggeration: foIsMapView ? 1.2 : 1.5 });
-            if (!foIsMapView) {
-                foMap.addLayer({
-                    id: 'sky', type: 'sky',
-                    paint: { 'sky-type': 'atmosphere', 'sky-atmosphere-sun': [0.0, 90.0], 'sky-atmosphere-sun-intensity': 15 }
-                });
+            if (!isMobile) {
+                if (!foMap.getSource('mapbox-dem')) {
+                    foMap.addSource('mapbox-dem', {
+                        type: 'raster-dem',
+                        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                        tileSize: 512, maxzoom: 14
+                    });
+                }
+                foMap.setTerrain({ source: 'mapbox-dem', exaggeration: foIsMapView ? 1.2 : 1.5 });
+                if (!foIsMapView) {
+                    foMap.addLayer({
+                        id: 'sky', type: 'sky',
+                        paint: { 'sky-type': 'atmosphere', 'sky-atmosphere-sun': [0.0, 90.0], 'sky-atmosphere-sun-intensity': 15 }
+                    });
+                }
             }
 
             var idx = Math.floor(foFractionalIdx);
@@ -1029,7 +1035,7 @@
             if (foIsMapView) {
                 foMap.easeTo({ pitch: 0, bearing: 0, zoom: foMapViewZoom, duration: 800 });
             } else {
-                foMap.easeTo({ pitch: 60, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800 });
+                foMap.easeTo({ pitch: foPitch, bearing: foSmoothBearing, zoom: foFlyoverZoom, duration: 800 });
             }
         }
 
@@ -1096,7 +1102,7 @@
                 style: 'mapbox://styles/mapbox/satellite-streets-v11',
                 center: foAllPoints[0],
                 zoom: 13,
-                pitch: 60,
+                pitch: foPitch,
                 bearing: 0
             });
 
@@ -1108,16 +1114,18 @@
             });
 
             foMap.on('load', function () {
-                foMap.addSource('mapbox-dem', {
-                    type: 'raster-dem',
-                    url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    tileSize: 512, maxzoom: 14
-                });
-                foMap.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-                foMap.addLayer({
-                    id: 'sky', type: 'sky',
-                    paint: { 'sky-type': 'atmosphere', 'sky-atmosphere-sun': [0.0, 90.0], 'sky-atmosphere-sun-intensity': 15 }
-                });
+                if (!isMobile) {
+                    foMap.addSource('mapbox-dem', {
+                        type: 'raster-dem',
+                        url: 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                        tileSize: 512, maxzoom: 14
+                    });
+                    foMap.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
+                    foMap.addLayer({
+                        id: 'sky', type: 'sky',
+                        paint: { 'sky-type': 'atmosphere', 'sky-atmosphere-sun': [0.0, 90.0], 'sky-atmosphere-sun-intensity': 15 }
+                    });
+                }
 
                 foMap.addSource('trail', { type: 'geojson', data: {
                     type: 'Feature', geometry: { type: 'LineString', coordinates: [foRawPoints[0]] }
@@ -1238,7 +1246,7 @@
                     if (foIsMapView) {
                         foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 0, zoom: foMapViewZoom, bearing: 0 });
                     } else {
-                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: 60, zoom: foFlyoverZoom, bearing: foSmoothBearing });
+                        foMap.jumpTo({ center: [foSmoothLng, foSmoothLat], pitch: foPitch, zoom: foFlyoverZoom, bearing: foSmoothBearing });
                     }
                 }
 
