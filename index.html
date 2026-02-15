@@ -1536,6 +1536,9 @@
                 foMapViewZoom = Math.max(5, Math.min(18, foMapViewZoom + delta));
             } else {
                 foFlyoverZoom = Math.max(10, Math.min(18, foFlyoverZoom + delta));
+                // Slow down on zoom in, speed up on zoom out
+                var newSpeedIdx = Math.max(0, Math.min(foSpeeds.length - 1, foSpeedIdx - delta));
+                if (newSpeedIdx !== foSpeedIdx) foSetSpeed(newSpeedIdx);
             }
         }
 
