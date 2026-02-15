@@ -311,12 +311,13 @@
                 position: relative;
                 height: 24px;
                 flex-shrink: 0;
-                background: #f5f5f5;
+                background: transparent;
+                border-bottom: 1px solid rgba(0,0,0,0.08);
             }
 
-            #st-progress-bar::before { top: 11px; height: 3px; background: rgba(0,0,0,0.06); }
-            #st-progress-fill { top: 11px; height: 3px; }
-            #st-progress-fill::after { opacity: 1; width: 14px; height: 14px; right: -7px; }
+            #st-progress-bar::before { top: 11px; height: 2px; background: rgba(0,0,0,0.08); }
+            #st-progress-fill { top: 11px; height: 2px; }
+            #st-progress-fill::after { opacity: 1; width: 12px; height: 12px; right: -6px; }
 
             #story {
                 margin-left: 0;
@@ -1597,16 +1598,15 @@
         window.addEventListener('hashchange', handleHash);
         handleHash();
 
-        // Mobile notice (once per session)
-        if (isMobile && !sessionStorage.getItem('mobile-noted')) {
-            sessionStorage.setItem('mobile-noted', '1');
+        // Mobile notice (every page load)
+        if (isMobile) {
             var note = document.createElement('div');
             note.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,0.75);color:rgba(255,255,255,0.9);padding:10px 20px;border-radius:20px;font-size:0.8rem;font-family:"EB Garamond",Georgia,serif;font-style:italic;backdrop-filter:blur(8px);opacity:0;transition:opacity 0.5s;pointer-events:none;text-align:center;max-width:90vw';
-            note.textContent = 'Some features like 3D terrain may be limited on mobile';
+            note.innerHTML = 'Some features like 3D terrain may be limited on mobile.<br>Try a computer browser for the full experience.';
             document.body.appendChild(note);
             setTimeout(function () { note.style.opacity = '1'; }, 200);
-            setTimeout(function () { note.style.opacity = '0'; }, 4500);
-            setTimeout(function () { note.remove(); }, 5000);
+            setTimeout(function () { note.style.opacity = '0'; }, 5500);
+            setTimeout(function () { note.remove(); }, 6000);
         }
     </script>
 
