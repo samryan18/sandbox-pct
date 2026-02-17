@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCT Journal Editor</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+.top-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid #e0e0e0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 24px; height: 56px;
+}
+.top-bar h1 { font-size: 1rem; font-weight: 600; }
+.top-bar .nav { display: flex; gap: 8px; align-items: center; }
+.top-bar .nav button {
+    padding: 6px 14px; border: 1px solid #ddd; border-radius: 6px;
+    background: #fff; cursor: pointer; font-size: 0.85rem;
+}
+.top-bar .nav button:hover { background: #f0f0f0; }
+.top-bar .nav button:disabled { opacity: 0.3; cursor: default; }
+.top-bar .nav .day-label { font-size: 0.85rem; color: #666; min-width: 100px; text-align: center; }
+.top-bar .actions { display: flex; gap: 8px; }
+.btn-export {
+    padding: 6px 16px; border: none; border-radius: 6px;
+    background: #2563eb; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500;
+}
+.btn-export:hover { background: #1d4ed8; }
+.btn-save-progress {
+    padding: 6px 16px; border: 1px solid #ddd; border-radius: 6px;
+    background: #fff; cursor: pointer; font-size: 0.85rem;
+}
+.unsaved-dot {
+    display: inline-block; width: 8px; height: 8px;
+    background: #f59e0b; border-radius: 50%; margin-left: 6px;
+    vertical-align: middle;
+}
+.unsaved-dot.hidden { display: none; }
+
+.editor { max-width: 1000px; margin: 72px auto 40px; padding: 0 24px; }
+
+.card {
+    background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    overflow: hidden; margin-bottom: 24px;
+}
+
+.day-header {
+    padding: 20px 24px; border-bottom: 1px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: baseline;
+}
+.day-header .day-num { font-size: 0.8rem; color: #999; font-weight: 500; }
+.day-header .day-date { font-size: 0.8rem; color: #999; }
+.day-header .day-stats-mini { font-size: 0.8rem; color: #bbb; margin-left: 12px; }
+
+.field { padding: 16px 24px; border-bottom: 1px solid #f5f5f5; }
+.field:last-child { border-bottom: none; }
+.field label { display: block; font-size: 0.75rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.field input[type="text"] {
+    width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 6px;
+    font-size: 1rem; font-family: inherit;
+}
+.field input[type="text"]:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+.field textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px;
+    font-size: 0.9rem; font-family: inherit; line-height: 1.6; resize: vertical; min-height: 120px;
+}
+.field textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+
+/* Photos section */
+.photos-section { padding: 16px 24px 20px; }
+.photos-section label { display: block; font-size: 0.75rem; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+.photo-grid {
+    display: flex; flex-wrap: wrap; gap: 10px;
+}
+.photo-item {
+    position: relative; width: 200px; cursor: grab;
+    border-radius: 8px; overflow: hidden;
+    border: 3px solid transparent;
+    transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.photo-item:active { cursor: grabbing; }
+.photo-item.primary { border-color: #2563eb; }
+.photo-item.dragging { opacity: 0.4; }
+.photo-item.drag-over { transform: scale(1.03); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.photo-item img {
+    width: 100%; height: 150px; object-fit: cover; display: block;
+}
+.photo-item .photo-label {
+    font-size: 0.65rem; padding: 4px 6px;
+    background: #f9f9f9; color: #888;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.photo-item.primary .photo-label { background: #eff6ff; color: #2563eb; font-weight: 600; }
+.photo-item .photo-actions {
+    position: absolute; top: 4px; right: 4px; display: flex; gap: 3px;
+}
+.photo-item .make-primary, .photo-item .delete-photo {
+    background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 4px;
+    font-size: 0.6rem; padding: 2px 6px; cursor: pointer; opacity: 0;
+    transition: opacity 0.15s;
+}
+.photo-item .delete-photo { background: rgba(200,30,30,0.7); }
+.photo-item:hover .make-primary, .photo-item:hover .delete-photo { opacity: 1; }
+.photo-item.primary .make-primary { display: none; }
+
+.photo-item .photo-order {
+    position: absolute; top: 4px; left: 4px;
+    background: rgba(0,0,0,0.5); color: #fff; border-radius: 4px;
+    font-size: 0.6rem; padding: 2px 5px; font-weight: 600;
+}
+
+.photo-item .photo-date {
+    display: flex; align-items: center; gap: 4px;
+    padding: 2px 6px; background: #f9f9f9; border-top: 1px solid #f0f0f0;
+}
+.photo-item .photo-date input[type="date"] {
+    font-size: 0.6rem; font-family: inherit; border: 1px solid #e0e0e0;
+    border-radius: 3px; padding: 1px 4px; width: 100%; cursor: pointer;
+}
+.photo-item .photo-date input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+
+.no-photos { color: #ccc; font-style: italic; font-size: 0.85rem; padding: 10px 0; }
+
+/* Keyboard shortcut hints */
+.shortcuts {
+    text-align: center; padding: 20px; color: #bbb; font-size: 0.75rem;
+}
+.shortcuts kbd {
+    background: #f0f0f0; border: 1px solid #ddd; border-radius: 3px;
+    padding: 1px 5px; font-family: inherit; font-size: 0.7rem;
+}
+
+/* Progress bar */
+.progress-bar {
+    position: fixed; top: 56px; left: 0; right: 0; height: 3px;
+    background: #f0f0f0; z-index: 99;
+}
+.progress-fill {
+    height: 100%; background: #2563eb; transition: width 0.2s;
+}
+
+/* Change indicator */
+.changed-badge {
+    display: inline-block; font-size: 0.6rem; background: #fef3c7; color: #92400e;
+    padding: 1px 6px; border-radius: 8px; margin-left: 8px; font-weight: 500;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h1>PCT Journal Editor</h1>
+    <div class="nav">
+        <button id="btn-prev" onclick="go(-1)">&larr; Prev</button>
+        <span class="day-label" id="nav-label">Day 1 / 110</span>
+        <button id="btn-next" onclick="go(1)">Next &rarr;</button>
+    </div>
+    <div class="actions">
+        <span id="unsaved-dot" class="unsaved-dot hidden" title="Unsaved changes"></span>
+        <button class="btn-save-progress" onclick="saveProgress()">Save Progress</button>
+        <button class="btn-export" onclick="exportJSON()">Export JSON</button>
+    </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+<div class="editor" id="editor"></div>
+<div class="shortcuts">
+    <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> Previous / Next day &nbsp;&middot;&nbsp;
+    <kbd>Ctrl+S</kbd> Save progress &nbsp;&middot;&nbsp;
+    Click a photo to make it primary &nbsp;&middot;&nbsp; Drag to reorder
+</div>
+
+<script src="data.js"></script>
+<script>
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+// The extraPhotos mapping (from index.html)
+var extraPhotos = {
+    0: ['images/days/img_9585.jpg', 'images/days/img_9620.jpg', 'images/days/img_9780.jpg', 'images/days/img_9783.jpg'],
+    1: ['images/days/img_5880.jpg', 'images/days/img_5892.jpg'],
+    3: ['images/days/img_5918.jpg', 'images/days/img_5933.jpg'],
+    4: ['images/days/img_5941.jpg', 'images/days/img_5950.jpg'],
+    5: ['images/days/img_5964.jpg', 'images/days/img_5965.jpg', 'images/days/img_5967.jpg'],
+    6: ['images/days/img_5984.jpg', 'images/days/img_5992.jpg'],
+    9: ['images/days/img_0373.jpg', 'images/days/img_6039.jpg'],
+    14: ['images/days/img_6134.jpg'],
+    15: ['images/days/img_6148.jpg'],
+    16: ['images/days/img_6151.jpg'],
+    17: ['images/days/img_6167.jpg'],
+    19: ['images/days/img_6198.jpg'],
+    20: ['images/days/img_6202.jpg', 'images/days/img_6209.jpg'],
+    22: ['images/days/img_6230.jpg'],
+    23: ['images/days/img_6257.jpg'],
+    26: ['images/days/img_6306.jpg'],
+    29: ['images/days/img_6338.jpg'],
+    30: ['images/days/img_6360.jpg'],
+    35: ['images/days/img_6438.jpg', 'images/days/img_6440.jpg'],
+    36: ['images/days/img_0572.jpg', 'images/days/img_5811.jpg', 'images/days/img_5841.jpg', 'images/days/img_6672.jpg', 'images/days/img_6681.jpg', 'images/days/img_6682.jpg', 'images/days/img_6691.jpg'],
+    37: ['images/days/img_0866.jpg'],
+    38: ['images/days/img_6729.jpg'],
+    39: ['images/days/img_6765.jpg'],
+    40: ['images/days/img_6777.jpg', 'images/days/img_6794.jpg'],
+    41: ['images/days/img_0849.jpg', 'images/days/img_6821.jpg', 'images/days/img_6838.jpg', 'images/days/img_6842.jpg', 'images/days/img_6864.jpg'],
+    42: ['images/days/img_6866.jpg'],
+    45: ['images/days/img_6933.jpg'],
+    46: ['images/days/img_6937.jpg', 'images/days/img_6945.jpg'],
+    48: ['images/days/img_0912.jpg'],
+    50: ['images/days/img_7002.jpg'],
+    52: ['images/days/img_7035.jpg', 'images/days/img_7095.jpg'],
+    53: ['images/days/img_7046.jpg', 'images/days/img_7083.jpg', 'images/days/img_7084.jpg'],
+    54: ['images/days/img_7080.jpg'],
+    55: ['images/days/img_7200.jpg', 'images/days/img_7209.jpg'],
+    59: ['images/days/img_7277.jpg'],
+    62: ['images/days/img_7312.jpg', 'images/days/img_7313.jpg'],
+    64: ['images/days/img_7352.jpg'],
+    68: ['images/days/img_7395.jpg', 'images/days/img_7396.jpg'],
+    69: ['images/days/img_7414.jpg'],
+    70: ['images/days/img_7426.jpg'],
+    72: ['images/days/0af7d295-09eb-46de-95b8-0bc45cdc392a.jpg', 'images/days/836f5ba3-a027-485f-adf7-875357f75d58.jpg', 'images/days/9fa3e802-6168-4a6b-8aa2-4be2a7940290.jpg', 'images/days/fullsizerender.jpg', 'images/days/img_7454.jpg', 'images/days/img_7462.jpg', 'images/days/img_7463.jpg', 'images/days/img_7467.jpg'],
+    73: ['images/days/img_7470.jpg'],
+    74: ['images/days/img_1973.jpg', 'images/days/img_7481.jpg', 'images/days/img_7489.jpg'],
+    76: ['images/days/64868032259__fd3045f7-c956-4d24-bc20-6e704a389045.jpg'],
+    81: ['images/days/img_7567.jpg', 'images/days/img_7568.jpg'],
+    88: ['images/days/img_7612.jpg'],
+    89: ['images/days/img_7626.jpg', 'images/days/img_7627.jpg', 'images/days/img_7621.jpg'],
+    90: ['images/days/img_7636.jpg'],
+    91: ['images/days/img_7640.jpg', 'images/days/img_7657.jpg'],
+    96: ['images/days/img_1133.jpg', 'images/days/img_7759.jpg', 'images/days/img_7768.jpg'],
+    97: ['images/days/img_7770.jpg'],
+    98: ['images/days/img_7788.jpg', 'images/days/img_7796.jpg'],
+    100: ['images/days/img_7805.jpg'],
+    101: ['images/days/img_5123.jpg', 'images/days/img_7817.jpg', 'images/days/img_7818.jpg', 'images/days/img_7831.jpg', 'images/days/img_7838.jpg'],
+    104: ['images/days/img_7893.jpg'],
+    105: ['images/days/img_1180.jpg', 'images/days/img_7899.jpg', 'images/days/img_7903.jpg', 'images/days/img_7906.jpg'],
+    106: ['images/days/img_7933.jpg'],
+    107: ['images/days/img_7953.jpg'],
+    108: ['images/days/img_7965.jpg', 'images/days/img_7974.jpg'],
+    109: ['images/days/img_7988.jpg', 'images/days/img_7998.jpg', 'images/days/img_8005.jpg', 'images/days/img_8024.jpg', 'images/days/img_8030.jpg', 'images/days/img_8079.jpg', 'images/days/img_8087.jpg', 'images/days/img_8090.jpg', 'images/days/img_8093.jpg']
+};
+
+var SPECIAL_PRIMARY = {
+    0: 'images/start.jpg',
+    9: 'images/days/img_0381.jpg',
+    24: 'images/days/img_6287.jpg',
+    30: 'images/days/img_0569.jpg',
+    37: 'images/days/img_0768.jpg'
+};
+var INCLUDE_STRAVA_AFTER_PRIMARY = {9: true, 24: true, 30: true, 37: true};
+
+// Build edits state — one entry per day
+// edits[i] = { name, description, primaryPhoto, photos: [all photos in order] }
+var edits = [];
+var currentIdx = 0;
+
+function initEdits() {
+    // Try to restore from localStorage
+    var saved = localStorage.getItem('pct-editor-v4');
+    if (saved) {
+        try {
+            edits = JSON.parse(saved);
+            if (edits.length === coordinates.length) return;
+        } catch(e) {}
+    }
+
+    edits = coordinates.map(function(d, i) {
+        // Collect all available photos for this day
+        var strava = d.photo_url || '';
+        var special = SPECIAL_PRIMARY[i] || '';
+        var extras = extraPhotos[i] || [];
+
+        // Build unique photo list matching getDayPhotos logic
+        var all = [];
+        var primary = special || strava;
+        if (primary) all.push(primary);
+        // Include strava after primary override if flagged
+        if (INCLUDE_STRAVA_AFTER_PRIMARY[i] && strava && strava !== primary) {
+            all.push(strava);
+        }
+        // Add extras (skip if already in list)
+        extras.forEach(function(p) {
+            if (all.indexOf(p) === -1) all.push(p);
+        });
+
+        return {
+            name: d.name,
+            description: d.description,
+            primaryPhoto: all[0] || '',
+            photos: all,
+            changed: false
+        };
+    });
+}
+
+function dayNumber(d) {
+    var start = new Date('2021-04-20');
+    var cur = new Date(d.start_date_local.substring(0, 10));
+    return Math.round((cur - start) / 86400000) + 1;
+}
+
+// Build date string -> indices lookup (multiple activities can share a date)
+var dateToIndices = {};
+coordinates.forEach(function(d, i) {
+    var dt = d.start_date_local.substring(0, 10);
+    if (!dateToIndices[dt]) dateToIndices[dt] = [];
+    dateToIndices[dt].push(i);
+});
+
+// Get min/max dates for datepicker range
+var allDates = coordinates.map(function(d) { return d.start_date_local.substring(0, 10); });
+var minDate = allDates[0], maxDate = allDates[allDates.length - 1];
+
+function changePhotoDate(fromIdx, photoIdx, newDate) {
+    var indices = dateToIndices[newDate];
+    if (!indices) return;
+    // Filter out the source day
+    var targets = indices.filter(function(i) { return i !== fromIdx; });
+    if (targets.length === 0) return;
+
+    if (targets.length === 1) {
+        doMovePhoto(fromIdx, photoIdx, targets[0]);
+    } else {
+        // Multiple activities on same date — let user pick
+        var msg = 'Multiple activities on ' + newDate + ':\n';
+        targets.forEach(function(ti, n) {
+            msg += (n + 1) + '. ' + coordinates[ti].name + '\n';
+        });
+        var choice = prompt(msg + '\nEnter number:');
+        if (!choice) return;
+        var pick = parseInt(choice) - 1;
+        if (pick >= 0 && pick < targets.length) {
+            doMovePhoto(fromIdx, photoIdx, targets[pick]);
+        }
+    }
+}
+
+function doMovePhoto(fromIdx, photoIdx, targetIdx) {
+    var photo = edits[fromIdx].photos[photoIdx];
+    edits[fromIdx].photos.splice(photoIdx, 1);
+    if (edits[fromIdx].primaryPhoto === photo) {
+        edits[fromIdx].primaryPhoto = edits[fromIdx].photos[0] || '';
+    }
+    markChanged(fromIdx);
+    edits[targetIdx].photos.push(photo);
+    markChanged(targetIdx);
+    var dn = dayNumber(coordinates[targetIdx]);
+    showToast('Moved photo to Day ' + dn + ' (' + coordinates[targetIdx].name + ')');
+    renderDay(fromIdx);
+}
+
+function formatDuration(s) {
+    var h = Math.floor(s / 3600);
+    var m = Math.round((s % 3600) / 60);
+    return h + 'h ' + m + 'm';
+}
+
+function renderDay(idx) {
+    var d = coordinates[idx];
+    var e = edits[idx];
+    var dn = dayNumber(d);
+    var date = d.start_date_local.substring(0, 10);
+    var stats = d.distance_miles.toFixed(1) + ' mi · ' +
+        Math.round(d.vert_feet).toLocaleString() + ' ft · ' +
+        formatDuration(d.moving_time);
+
+    var photosHTML = '';
+    if (e.photos.length === 0) {
+        photosHTML = '<div class="no-photos">No photos for this day</div>';
+    } else {
+        photosHTML = '<div class="photo-grid" id="photo-grid">';
+        e.photos.forEach(function(p, pi) {
+            var isPrimary = p === e.primaryPhoto;
+            var shortName = p.split('/').pop();
+            var isLocal = p.indexOf('images/') === 0;
+            if (p.indexOf('cloudfront') !== -1) shortName = 'Strava photo';
+            var dateHTML = '';
+            if (isLocal) {
+                dateHTML = '<div class="photo-date"><input type="date" value="' + date + '" min="' + minDate + '" max="' + maxDate + '" onchange="changePhotoDate(' + idx + ',' + pi + ',this.value)"></div>';
+            }
+            photosHTML += '<div class="photo-item' + (isPrimary ? ' primary' : '') + '" draggable="true" data-idx="' + pi + '">' +
+                '<span class="photo-order">' + (pi + 1) + '</span>' +
+                '<div class="photo-actions">' +
+                    '<button class="make-primary" onclick="makePrimary(' + idx + ',' + pi + ')">Set primary</button>' +
+                    '<button class="delete-photo" onclick="deletePhoto(' + idx + ',' + pi + ')">Delete</button>' +
+                '</div>' +
+                '<img src="' + p + '" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 140 105%22><rect fill=%22%23f0f0f0%22 width=%22140%22 height=%22105%22/><text x=%2270%22 y=%2252%22 text-anchor=%22middle%22 fill=%22%23ccc%22 font-size=%2212%22>broken</text></svg>\'">' +
+                '<div class="photo-label">' + shortName + '</div>' +
+                dateHTML +
+            '</div>';
+        });
+        photosHTML += '</div>';
+    }
+
+    var changedBadge = e.changed ? '<span class="changed-badge">edited</span>' : '';
+
+    document.getElementById('editor').innerHTML =
+        '<div class="card">' +
+            '<div class="day-header">' +
+                '<div><span class="day-num">Day ' + dn + changedBadge + '</span></div>' +
+                '<div><span class="day-date">' + date + '</span><span class="day-stats-mini">' + stats + '</span></div>' +
+            '</div>' +
+            '<div class="field">' +
+                '<label>Title</label>' +
+                '<input type="text" id="edit-name" value="' + e.name.replace(/"/g, '&quot;') + '">' +
+            '</div>' +
+            '<div class="field">' +
+                '<label>Journal Entry</label>' +
+                '<textarea id="edit-desc">' + escapeHTML(e.description) + '</textarea>' +
+            '</div>' +
+            '<div class="photos-section">' +
+                '<label>Photos <span style="font-weight:400;text-transform:none;color:#bbb">(drag to reorder · click "Set primary" to choose hero photo)</span></label>' +
+                photosHTML +
+            '</div>' +
+        '</div>';
+
+    // Bind input events
+    document.getElementById('edit-name').addEventListener('input', function() {
+        edits[idx].name = this.value;
+        markChanged(idx);
+    });
+    document.getElementById('edit-desc').addEventListener('input', function() {
+        edits[idx].description = this.value;
+        markChanged(idx);
+    });
+
+    // Auto-resize textarea
+    var ta = document.getElementById('edit-desc');
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(120, ta.scrollHeight + 4) + 'px';
+    ta.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.max(120, this.scrollHeight + 4) + 'px';
+    });
+
+    // Setup drag and drop
+    setupDragDrop(idx);
+
+    // Update nav
+    document.getElementById('nav-label').textContent = 'Day ' + dn + ' / 110';
+    document.getElementById('btn-prev').disabled = idx === 0;
+    document.getElementById('btn-next').disabled = idx === coordinates.length - 1;
+    document.getElementById('progress-fill').style.width = ((idx + 1) / coordinates.length * 100) + '%';
+}
+
+function escapeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function markChanged(idx) {
+    edits[idx].changed = true;
+    document.getElementById('unsaved-dot').classList.remove('hidden');
+}
+
+function makePrimary(dayIdx, photoIdx) {
+    edits[dayIdx].primaryPhoto = edits[dayIdx].photos[photoIdx];
+    // Move to front
+    var photo = edits[dayIdx].photos.splice(photoIdx, 1)[0];
+    edits[dayIdx].photos.unshift(photo);
+    markChanged(dayIdx);
+    renderDay(dayIdx);
+}
+
+function deletePhoto(dayIdx, photoIdx) {
+    var photos = edits[dayIdx].photos;
+    if (photos.length <= 1) return; // don't delete the last photo
+    var removed = photos.splice(photoIdx, 1)[0];
+    // If we deleted the primary, new primary is first remaining
+    if (edits[dayIdx].primaryPhoto === removed) {
+        edits[dayIdx].primaryPhoto = photos[0] || '';
+    }
+    markChanged(dayIdx);
+    renderDay(dayIdx);
+}
+
+function setupDragDrop(dayIdx) {
+    var grid = document.getElementById('photo-grid');
+    if (!grid) return;
+    var items = grid.querySelectorAll('.photo-item');
+    var dragSrcIdx = null;
+
+    items.forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+            dragSrcIdx = parseInt(this.dataset.idx);
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', dragSrcIdx);
+        });
+        item.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            items.forEach(function(el) { el.classList.remove('drag-over'); });
+        });
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var destIdx = parseInt(this.dataset.idx);
+            if (dragSrcIdx === null || dragSrcIdx === destIdx) return;
+
+            // Reorder
+            var photos = edits[dayIdx].photos;
+            var moved = photos.splice(dragSrcIdx, 1)[0];
+            photos.splice(destIdx, 0, moved);
+            // Update primary to whatever is first
+            edits[dayIdx].primaryPhoto = photos[0];
+            markChanged(dayIdx);
+            renderDay(dayIdx);
+        });
+    });
+}
+
+function go(delta) {
+    var next = currentIdx + delta;
+    if (next < 0 || next >= coordinates.length) return;
+    currentIdx = next;
+    renderDay(currentIdx);
+    window.scrollTo(0, 0);
+}
+
+function saveProgress() {
+    localStorage.setItem('pct-editor-v4', JSON.stringify(edits));
+    document.getElementById('unsaved-dot').classList.add('hidden');
+    showToast('Progress saved to browser');
+}
+
+function exportJSON() {
+    // Build export: only include changed entries, plus photo config
+    var output = {
+        _note: 'PCT Journal Edits — import into data.js',
+        _exported: new Date().toISOString(),
+        entries: [],
+        photoConfig: {}
+    };
+
+    edits.forEach(function(e, i) {
+        var d = coordinates[i];
+        var entry = { index: i, dayNumber: dayNumber(d) };
+        var hasTextChanges = e.name !== d.name || e.description !== d.description;
+
+        if (hasTextChanges) {
+            entry.name = e.name;
+            entry.description = e.description;
+            entry.originalName = d.name;
+        }
+
+        // Always include photo config if there are photos
+        if (e.photos.length > 0) {
+            entry.primaryPhoto = e.primaryPhoto;
+            entry.photos = e.photos;
+        }
+
+        if (hasTextChanges || e.changed) {
+            output.entries.push(entry);
+        }
+
+        // Photo config for rebuilding extraPhotos + getDayPhotos
+        if (e.photos.length > 0) {
+            output.photoConfig[i] = {
+                primary: e.primaryPhoto,
+                all: e.photos
+            };
+        }
+    });
+
+    var blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'pct-edits.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Exported ' + output.entries.length + ' edited entries');
+}
+
+function showToast(msg) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;z-index:200;opacity:0;transition:opacity 0.3s';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function() { t.style.opacity = '1'; });
+    setTimeout(function() {
+        t.style.opacity = '0';
+        setTimeout(function() { t.remove(); }, 300);
+    }, 2000);
+}
+
+// Keyboard nav
+document.addEventListener('keydown', function(e) {
+    // Don't navigate if focused on input/textarea
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        if (e.key === 'Escape') e.target.blur();
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProgress(); }
+        return;
+    }
+    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight') go(1);
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProgress(); }
+});
+
+// Auto-save every 30s
+setInterval(function() {
+    if (!document.getElementById('unsaved-dot').classList.contains('hidden')) {
+        saveProgress();
+    }
+}, 30000);
+
+// Init
+initEdits();
+renderDay(0);
+</script>
+</body>
+</html>

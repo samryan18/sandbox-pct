@@ -991,6 +991,8 @@
 
     <script src="data.js"></script>
     <script>
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
         // ══════════════════════════════════════
         // Shared helpers
         // ══════════════════════════════════════
@@ -1155,9 +1157,9 @@
                 1: ['images/days/img_5880.jpg', 'images/days/img_5892.jpg'],
                 3: ['images/days/img_5918.jpg', 'images/days/img_5933.jpg'],
                 4: ['images/days/img_5941.jpg', 'images/days/img_5950.jpg'],
-                5: ['images/days/img_5964.jpg', 'images/days/img_5965.jpg', 'images/days/img_5967.jpg', 'images/days/img_5978.jpg'],
+                5: ['images/days/img_5964.jpg', 'images/days/img_5965.jpg', 'images/days/img_5967.jpg'],
                 6: ['images/days/img_5984.jpg', 'images/days/img_5992.jpg'],
-                9: ['images/days/img_0373.jpg', 'images/days/img_0381.jpg', 'images/days/img_6039.jpg'],
+                9: ['images/days/img_0373.jpg', 'images/days/img_6039.jpg'],
                 14: ['images/days/img_6134.jpg'],
                 15: ['images/days/img_6148.jpg'],
                 16: ['images/days/img_6151.jpg'],
@@ -1166,12 +1168,12 @@
                 20: ['images/days/img_6202.jpg', 'images/days/img_6209.jpg'],
                 22: ['images/days/img_6230.jpg'],
                 23: ['images/days/img_6257.jpg'],
-                25: ['images/days/img_6306.jpg'],
+                26: ['images/days/img_6306.jpg'],
                 29: ['images/days/img_6338.jpg'],
-                30: ['images/days/img_0569.jpg', 'images/days/img_6360.jpg'],
+                30: ['images/days/img_6360.jpg'],
                 35: ['images/days/img_6438.jpg', 'images/days/img_6440.jpg'],
                 36: ['images/days/img_0572.jpg', 'images/days/img_5811.jpg', 'images/days/img_5841.jpg', 'images/days/img_6672.jpg', 'images/days/img_6681.jpg', 'images/days/img_6682.jpg', 'images/days/img_6691.jpg'],
-                37: ['images/days/img_0768.jpg', 'images/days/img_0866.jpg'],
+                37: ['images/days/img_0866.jpg'],
                 38: ['images/days/img_6729.jpg'],
                 39: ['images/days/img_6765.jpg'],
                 40: ['images/days/img_6777.jpg', 'images/days/img_6794.jpg'],
@@ -1181,7 +1183,7 @@
                 46: ['images/days/img_6937.jpg', 'images/days/img_6945.jpg'],
                 48: ['images/days/img_0912.jpg'],
                 50: ['images/days/img_7002.jpg'],
-                52: ['images/days/img_7035.jpg', 'images/days/img_7065.jpg', 'images/days/img_7095.jpg'],
+                52: ['images/days/img_7035.jpg', 'images/days/img_7095.jpg'],
                 53: ['images/days/img_7046.jpg', 'images/days/img_7083.jpg', 'images/days/img_7084.jpg'],
                 54: ['images/days/img_7080.jpg'],
                 55: ['images/days/img_7200.jpg', 'images/days/img_7209.jpg'],
@@ -1197,9 +1199,9 @@
                 76: ['images/days/64868032259__fd3045f7-c956-4d24-bc20-6e704a389045.jpg'],
                 81: ['images/days/img_7567.jpg', 'images/days/img_7568.jpg'],
                 88: ['images/days/img_7612.jpg'],
-                89: ['images/days/img_7621.jpg', 'images/days/img_7626.jpg', 'images/days/img_7627.jpg'],
+                89: ['images/days/img_7626.jpg', 'images/days/img_7627.jpg', 'images/days/img_7621.jpg'],
                 90: ['images/days/img_7636.jpg'],
-                91: ['images/days/img_7640.jpg', 'images/days/img_7657.jpg', 'images/days/img_7675.jpg'],
+                91: ['images/days/img_7640.jpg', 'images/days/img_7657.jpg'],
                 96: ['images/days/img_1133.jpg', 'images/days/img_7759.jpg', 'images/days/img_7768.jpg'],
                 97: ['images/days/img_7770.jpg'],
                 98: ['images/days/img_7788.jpg', 'images/days/img_7796.jpg'],
@@ -1213,23 +1215,27 @@
                 109: ['images/days/img_7988.jpg', 'images/days/img_7998.jpg', 'images/days/img_8005.jpg', 'images/days/img_8024.jpg', 'images/days/img_8030.jpg', 'images/days/img_8079.jpg', 'images/days/img_8087.jpg', 'images/days/img_8090.jpg', 'images/days/img_8093.jpg']
         };
 
+        // Primary photo overrides (local image instead of Strava)
+        var primaryOverrides = {
+            0: 'images/start.jpg',
+            9: 'images/days/img_0381.jpg',
+            24: 'images/days/img_6287.jpg',
+            30: 'images/days/img_0569.jpg',
+            37: 'images/days/img_0768.jpg'
+        };
+        // Days where Strava photo is included after the primary override
+        var includeStravaAfterPrimary = {9: true, 24: true, 30: true, 37: true};
+
         // Build full photo array for a given day index
         function getDayPhotos(i) {
             var d = coordinates[i];
-            var primary;
-            if (i === 0) {
-                primary = 'images/start.jpg';
-            } else if (i === 24) {
-                primary = 'images/days/img_6287.jpg';
-            } else {
-                primary = d.photo_url;
-            }
+            var primary = primaryOverrides[i] || d.photo_url;
             var photos = primary ? [primary] : [];
+            if (includeStravaAfterPrimary[i] && d.photo_url) photos.splice(1, 0, d.photo_url);
             if (extraPhotos[i]) {
                 var extras = extraPhotos[i].filter(function(p) { return p !== primary; });
                 photos = photos.concat(extras);
             }
-            if (i === 24 && d.photo_url) photos.splice(1, 0, d.photo_url);
             return photos;
         }
 
