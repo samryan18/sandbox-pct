@@ -225,10 +225,59 @@
             transform: translateY(0);
         }
 
+        .day-card .photo-carousel {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
         .day-card .day-photo {
             width: 100%;
-            margin-bottom: 20px;
+            display: block;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .carousel-prev, .carousel-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.35);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 2;
+        }
+
+        .photo-carousel:hover .carousel-prev,
+        .photo-carousel:hover .carousel-next { opacity: 1; }
+
+        @media (hover: none) {
+            .carousel-prev, .carousel-next,
+            #fo-photo-carousel .carousel-prev,
+            #fo-photo-carousel .carousel-next { opacity: 0.6; width: 44px; height: 44px; font-size: 1.5rem; }
+        }
+
+        .carousel-prev { left: 8px; }
+        .carousel-next { right: 8px; }
+
+        .carousel-counter {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.45);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-style: normal;
+            letter-spacing: 0.5px;
+            z-index: 2;
         }
 
         .day-card .day-label {
@@ -502,6 +551,39 @@
         #fo-progress-bar:hover #fo-progress-fill { height: 6px; top: 11px; background: #5A7AFF; }
         #fo-progress-bar:hover #fo-progress-fill::after { background: #5A7AFF; width: 16px; height: 16px; right: -8px; }
 
+        #fo-play-indicator {
+            position: absolute;
+            top: 76px;
+            left: 20px;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        #fo-play-indicator svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            padding: 7px;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+        #fo-play-indicator:hover svg { background: rgba(0,0,0,0.6); }
+        #fo-play-indicator.playing svg { background: rgba(255,255,255,0.2); fill: white; }
+        #fo-space-hint {
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            transition: opacity 0.5s;
+        }
+        #fo-space-hint.hidden { opacity: 0; }
+
         #fo-controls {
             position: absolute;
             bottom: 24px;
@@ -589,12 +671,24 @@
 
         #fo-day-info.visible { opacity: 1; transform: translateY(-50%) translateX(0); }
 
-        #fo-day-info img {
+        #fo-photo-carousel {
+            position: relative;
+            overflow: hidden;
+        }
+        #fo-day-info .day-photo {
             width: 100%;
             height: 35vh;
             max-height: 400px;
             object-fit: cover;
+            display: block;
         }
+        #fo-photo-carousel .carousel-prev,
+        #fo-photo-carousel .carousel-next { opacity: 0; }
+        #fo-photo-carousel:hover .carousel-prev,
+        #fo-photo-carousel:hover .carousel-next { opacity: 1; }
+        #fo-photo-carousel.single .carousel-prev,
+        #fo-photo-carousel.single .carousel-next,
+        #fo-photo-carousel.single .carousel-counter { display: none; }
 
         #fo-day-info .info-body { padding: 22px 28px; }
 
@@ -701,6 +795,8 @@
             #fo-progress-fill { top: 14px; height: 8px; }
             #fo-progress-fill::after { width: 22px; height: 22px; right: -11px; }
 
+            #fo-play-indicator { display: none; }
+
             #fo-compass {
                 width: 36px;
                 height: 36px;
@@ -719,7 +815,7 @@
             }
 
             #fo-day-info.visible { transform: none; }
-            #fo-day-info img { display: none; }
+            #fo-photo-carousel { display: none; }
             #fo-day-info .info-body { padding: 8px 12px; }
             #fo-day-info .info-day-num { font-size: 0.7rem; }
 
@@ -804,6 +900,7 @@
                 <img class="footer-photo" src="images/finish.jpg" alt="Northern Terminus of the Pacific Crest Trail">
                 <h2>What a world.</h2>
                 <p>Mexico to Canada &middot; 2,751 miles &middot; 442,268 ft of climbing &middot; 6 pairs of shoes</p>
+                <p style="margin-top:32px;font-size:0.8rem;color:rgba(0,0,0,0.25);font-style:normal">Made by <a href="https://samryan18.github.io/" target="_blank" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Sam Ryan</a></p>
             </div>
         </div>
 
@@ -813,6 +910,11 @@
     <!-- ── Flyover View ── -->
     <div id="flyover-view" style="display:none">
         <div id="fo-progress-bar" title="Drag to scrub through the trail"><div id="fo-progress-fill"></div></div>
+        <div id="fo-play-indicator" onclick="foTogglePlay()">
+            <svg id="fo-play-icon" viewBox="0 0 16 16"><polygon points="4,2 14,8 4,14"/></svg>
+            <svg id="fo-pause-icon" viewBox="0 0 16 16" style="display:none"><rect x="2" y="2" width="4" height="12"/><rect x="10" y="2" width="4" height="12"/></svg>
+            <span id="fo-space-hint">space</span>
+        </div>
         <div id="fo-map"></div>
 
         <div id="fo-compass" title="Compass">
@@ -824,7 +926,12 @@
         </div>
 
         <div id="fo-day-info">
-            <img id="fo-info-photo" src="" alt="" onerror="this.style.display='none'">
+            <div id="fo-photo-carousel" class="photo-carousel" data-photos="[]" data-idx="0">
+                <img id="fo-info-photo" class="day-photo" src="" alt="" onerror="this.onerror=null; this.closest('.photo-carousel').style.display='none';">
+                <button class="carousel-prev" aria-label="Previous photo">&#8249;</button>
+                <button class="carousel-next" aria-label="Next photo">&#8250;</button>
+                <div class="carousel-counter" style="display:none"></div>
+            </div>
             <div class="info-body">
                 <div id="fo-info-day-num" class="info-day-num"></div>
                 <h5 id="fo-info-name"></h5>
@@ -1042,6 +1149,102 @@
         // ══════════════════════════════════════
         // Story
         // ══════════════════════════════════════
+        // Extra photos mapped by day index (shared by Story + Flyover)
+        var extraPhotos = {
+                0: ['images/days/img_9585.jpg', 'images/days/img_9620.jpg', 'images/days/img_9780.jpg', 'images/days/img_9783.jpg'],
+                1: ['images/days/img_5880.jpg', 'images/days/img_5892.jpg'],
+                3: ['images/days/img_5918.jpg', 'images/days/img_5933.jpg'],
+                4: ['images/days/img_5941.jpg', 'images/days/img_5950.jpg'],
+                5: ['images/days/img_5964.jpg', 'images/days/img_5965.jpg', 'images/days/img_5967.jpg', 'images/days/img_5978.jpg'],
+                6: ['images/days/img_5984.jpg', 'images/days/img_5992.jpg'],
+                9: ['images/days/img_0373.jpg', 'images/days/img_0381.jpg', 'images/days/img_6039.jpg'],
+                14: ['images/days/img_6134.jpg'],
+                15: ['images/days/img_6148.jpg'],
+                16: ['images/days/img_6151.jpg'],
+                17: ['images/days/img_6167.jpg'],
+                19: ['images/days/img_6198.jpg'],
+                20: ['images/days/img_6202.jpg', 'images/days/img_6209.jpg'],
+                22: ['images/days/img_6230.jpg'],
+                23: ['images/days/img_6257.jpg'],
+                25: ['images/days/img_6306.jpg'],
+                29: ['images/days/img_6338.jpg'],
+                30: ['images/days/img_0569.jpg', 'images/days/img_6360.jpg'],
+                35: ['images/days/img_6438.jpg', 'images/days/img_6440.jpg'],
+                36: ['images/days/img_0572.jpg', 'images/days/img_5811.jpg', 'images/days/img_5841.jpg', 'images/days/img_6672.jpg', 'images/days/img_6681.jpg', 'images/days/img_6682.jpg', 'images/days/img_6691.jpg'],
+                37: ['images/days/img_0768.jpg', 'images/days/img_0866.jpg'],
+                38: ['images/days/img_6729.jpg'],
+                39: ['images/days/img_6765.jpg'],
+                40: ['images/days/img_6777.jpg', 'images/days/img_6794.jpg'],
+                41: ['images/days/img_0849.jpg', 'images/days/img_6821.jpg', 'images/days/img_6838.jpg', 'images/days/img_6842.jpg', 'images/days/img_6864.jpg'],
+                42: ['images/days/img_6866.jpg'],
+                45: ['images/days/img_6933.jpg'],
+                46: ['images/days/img_6937.jpg', 'images/days/img_6945.jpg'],
+                48: ['images/days/img_0912.jpg'],
+                50: ['images/days/img_7002.jpg'],
+                52: ['images/days/img_7035.jpg', 'images/days/img_7065.jpg', 'images/days/img_7095.jpg'],
+                53: ['images/days/img_7046.jpg', 'images/days/img_7083.jpg', 'images/days/img_7084.jpg'],
+                54: ['images/days/img_7080.jpg'],
+                55: ['images/days/img_7200.jpg', 'images/days/img_7209.jpg'],
+                59: ['images/days/img_7277.jpg'],
+                62: ['images/days/img_7312.jpg', 'images/days/img_7313.jpg'],
+                64: ['images/days/img_7352.jpg'],
+                68: ['images/days/img_7395.jpg', 'images/days/img_7396.jpg'],
+                69: ['images/days/img_7414.jpg'],
+                70: ['images/days/img_7426.jpg'],
+                72: ['images/days/0af7d295-09eb-46de-95b8-0bc45cdc392a.jpg', 'images/days/836f5ba3-a027-485f-adf7-875357f75d58.jpg', 'images/days/9fa3e802-6168-4a6b-8aa2-4be2a7940290.jpg', 'images/days/fullsizerender.jpg', 'images/days/img_7454.jpg', 'images/days/img_7462.jpg', 'images/days/img_7463.jpg', 'images/days/img_7467.jpg'],
+                73: ['images/days/img_7470.jpg'],
+                74: ['images/days/img_1973.jpg', 'images/days/img_7481.jpg', 'images/days/img_7489.jpg'],
+                76: ['images/days/64868032259__fd3045f7-c956-4d24-bc20-6e704a389045.jpg'],
+                81: ['images/days/img_7567.jpg', 'images/days/img_7568.jpg'],
+                88: ['images/days/img_7612.jpg'],
+                89: ['images/days/img_7621.jpg', 'images/days/img_7626.jpg', 'images/days/img_7627.jpg'],
+                90: ['images/days/img_7636.jpg'],
+                91: ['images/days/img_7640.jpg', 'images/days/img_7657.jpg', 'images/days/img_7675.jpg'],
+                96: ['images/days/img_1133.jpg', 'images/days/img_7759.jpg', 'images/days/img_7768.jpg'],
+                97: ['images/days/img_7770.jpg'],
+                98: ['images/days/img_7788.jpg', 'images/days/img_7796.jpg'],
+                100: ['images/days/img_7805.jpg'],
+                101: ['images/days/img_5123.jpg', 'images/days/img_7817.jpg', 'images/days/img_7818.jpg', 'images/days/img_7831.jpg', 'images/days/img_7838.jpg'],
+                104: ['images/days/img_7893.jpg'],
+                105: ['images/days/img_1180.jpg', 'images/days/img_7899.jpg', 'images/days/img_7903.jpg', 'images/days/img_7906.jpg'],
+                106: ['images/days/img_7933.jpg'],
+                107: ['images/days/img_7953.jpg'],
+                108: ['images/days/img_7965.jpg', 'images/days/img_7974.jpg'],
+                109: ['images/days/img_7988.jpg', 'images/days/img_7998.jpg', 'images/days/img_8005.jpg', 'images/days/img_8024.jpg', 'images/days/img_8030.jpg', 'images/days/img_8079.jpg', 'images/days/img_8087.jpg', 'images/days/img_8090.jpg', 'images/days/img_8093.jpg']
+        };
+
+        // Build full photo array for a given day index
+        function getDayPhotos(i) {
+            var d = coordinates[i];
+            var primary;
+            if (i === 0) {
+                primary = 'images/start.jpg';
+            } else if (i === 24) {
+                primary = 'images/days/img_6287.jpg';
+            } else {
+                primary = d.photo_url;
+            }
+            var photos = primary ? [primary] : [];
+            if (extraPhotos[i]) {
+                var extras = extraPhotos[i].filter(function(p) { return p !== primary; });
+                photos = photos.concat(extras);
+            }
+            if (i === 24 && d.photo_url) photos.splice(1, 0, d.photo_url);
+            return photos;
+        }
+
+        // Shared carousel navigation
+        function carouselNav(carousel, dir) {
+            var photos = JSON.parse(carousel.dataset.photos);
+            var idx = parseInt(carousel.dataset.idx) + dir;
+            if (idx < 0) idx = photos.length - 1;
+            if (idx >= photos.length) idx = 0;
+            carousel.dataset.idx = idx;
+            carousel.querySelector('.day-photo').src = photos[idx];
+            var counter = carousel.querySelector('.carousel-counter');
+            if (counter) counter.textContent = (idx + 1) + ' / ' + photos.length;
+        }
+
         (function initStory() {
             // Hero summary
             var summaryStats = [
@@ -1054,7 +1257,6 @@
                     '<span class="stat-item">' + s + '</span>';
             }).join('');
 
-
             // Generate day cards
             var cumulativeMiles = 0;
             var cardsHTML = coordinates.map(function (d, i) {
@@ -1062,9 +1264,19 @@
                 var pace = formatPace(d.pace);
                 var dateStr = d.start_date_local.substring(0, 10);
                 var dayNum = dayNumber(d);
-                var photoSrc = i === 0 ? 'images/start.jpg' : d.photo_url;
+
+                var photos = getDayPhotos(i);
+                var hasMultiple = photos.length > 1;
+                var photoHTML = '';
+                if (photos.length > 0) {
+                    photoHTML = '<div class="photo-carousel" data-day="' + i + '" data-photos=\'' + JSON.stringify(photos).replace(/'/g, '&#39;') + '\' data-idx="0">' +
+                        '<img class="day-photo" src="' + photos[0] + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.parentNode.style.display=\'none\';">' +
+                        (hasMultiple ? '<button class="carousel-prev" aria-label="Previous photo">&#8249;</button><button class="carousel-next" aria-label="Next photo">&#8250;</button><div class="carousel-counter">1 / ' + photos.length + '</div>' : '') +
+                    '</div>';
+                }
+
                 return '<div class="day-card" data-day="' + i + '" data-mile="' + cumulativeMiles.toFixed(0) + '" data-daynum="' + dayNum + '">' +
-                    '<img class="day-photo" src="' + photoSrc + '" alt="' + d.name.replace(/"/g, '&quot;') + '" loading="lazy" onerror="this.onerror=null; this.style.display=\'none\';">' +
+                    photoHTML +
                     '<div class="day-label">Day ' + dayNum + ' &middot; ' + dateStr + ' &middot; Mile ' + Math.round(cumulativeMiles).toLocaleString() + '</div>' +
                     '<h3>' + d.name.replace(/^Day\s+\d+:\s*/i, '') + '</h3>' +
                     '<div class="day-stats">' +
@@ -1250,6 +1462,29 @@
             document.addEventListener('touchmove', function (e) { if (stScrubbing) stScrubTo(e); }, { passive: true });
             document.addEventListener('mouseup', function () { stScrubbing = false; });
             document.addEventListener('touchend', function () { stScrubbing = false; });
+
+            // Photo carousel click handler
+            document.getElementById('day-cards').addEventListener('click', function (e) {
+                var btn = e.target.closest('.carousel-prev, .carousel-next');
+                if (!btn) return;
+                var carousel = btn.closest('.photo-carousel');
+                carouselNav(carousel, btn.classList.contains('carousel-next') ? 1 : -1);
+            });
+
+            // Arrow keys cycle photos of visible day card
+            document.addEventListener('keydown', function (e) {
+                if (document.getElementById('story-view').style.display === 'none') return;
+                if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+                if (stCurrentDay < 0) return;
+                var card = document.querySelector('.day-card[data-day="' + stCurrentDay + '"]');
+                if (!card) return;
+                var carousel = card.querySelector('.photo-carousel[data-photos]');
+                if (!carousel) return;
+                var photos = JSON.parse(carousel.dataset.photos);
+                if (photos.length <= 1) return;
+                e.preventDefault();
+                carouselNav(carousel, e.key === 'ArrowRight' ? 1 : -1);
+            });
         })();
 
         // ══════════════════════════════════════
@@ -1412,10 +1647,19 @@
             return diff;
         }
 
+        function foUpdatePlayIndicator() {
+            var ind = document.getElementById('fo-play-indicator');
+            document.getElementById('fo-play-icon').style.display = foIsPaused ? '' : 'none';
+            document.getElementById('fo-pause-icon').style.display = foIsPaused ? 'none' : '';
+            ind.classList.toggle('playing', !foIsPaused);
+            document.getElementById('fo-space-hint').classList.add('hidden');
+        }
+
         function foTogglePlay() {
             foIsPaused = !foIsPaused;
             document.getElementById('fo-playBtn').textContent = foIsPaused ? 'Start' : 'Pause';
             document.getElementById('fo-playBtn').classList.toggle('active', !foIsPaused);
+            foUpdatePlayIndicator();
             if (!foIsPaused && foAnimateFn) requestAnimationFrame(foAnimateFn);
         }
 
@@ -1440,6 +1684,7 @@
             foCurrentSection = FO_PCT_SECTIONS[0].name;
             document.getElementById('fo-playBtn').textContent = 'Start';
             document.getElementById('fo-playBtn').classList.remove('active');
+            foUpdatePlayIndicator();
             document.getElementById('fo-progress-fill').style.width = '0%';
             var campSrc = foMap.getSource('campsites');
             if (campSrc) campSrc.setData({ type: 'FeatureCollection', features: [] });
@@ -1713,10 +1958,26 @@
             }
             var d = coordinates[dayIdx];
             var panel = document.getElementById('fo-day-info');
+            var foCarousel = document.getElementById('fo-photo-carousel');
+            var photos = getDayPhotos(dayIdx);
             var photo = document.getElementById('fo-info-photo');
-            photo.src = dayIdx === 0 ? 'images/start.jpg' : d.photo_url;
-            photo.alt = d.name;
-            photo.style.display = '';
+            if (photos.length > 0) {
+                foCarousel.dataset.photos = JSON.stringify(photos);
+                foCarousel.dataset.idx = '0';
+                photo.src = photos[0];
+                photo.alt = d.name;
+                foCarousel.style.display = '';
+                foCarousel.classList.toggle('single', photos.length <= 1);
+                var counter = foCarousel.querySelector('.carousel-counter');
+                if (photos.length > 1) {
+                    counter.textContent = '1 / ' + photos.length;
+                    counter.style.display = '';
+                } else {
+                    counter.style.display = 'none';
+                }
+            } else {
+                foCarousel.style.display = 'none';
+            }
             document.getElementById('fo-info-day-num').textContent = 'Day ' + dayNumber(coordinates[dayIdx]) + ' of ' + totalDays;
             document.getElementById('fo-info-name').textContent = d.name.replace(/^Day\s+\d+:\s*/i, '');
             document.getElementById('fo-info-miles').textContent = d.distance_miles.toFixed(1);
@@ -1923,6 +2184,7 @@
                 if (idx >= foAllPoints.length - 1) {
                     foIsPaused = true;
                     document.getElementById('fo-playBtn').textContent = 'Done';
+                    foUpdatePlayIndicator();
                     return;
                 }
 
@@ -2047,6 +2309,7 @@
                 if (document.getElementById('fo-playBtn')) {
                     document.getElementById('fo-playBtn').textContent = 'Start';
                     document.getElementById('fo-playBtn').classList.remove('active');
+                    foUpdatePlayIndicator();
                 }
 
                 // Sync: scroll to flyover's current day if valid
@@ -2078,10 +2341,31 @@
             }
         }
 
+        // Flyover photo carousel — hover tracking + click handler
+        var foCarouselHovered = false;
+        var foCarouselEl = document.getElementById('fo-photo-carousel');
+        foCarouselEl.addEventListener('mouseenter', function () { foCarouselHovered = true; });
+        foCarouselEl.addEventListener('mouseleave', function () { foCarouselHovered = false; });
+        foCarouselEl.addEventListener('click', function (e) {
+            var btn = e.target.closest('.carousel-prev, .carousel-next');
+            if (btn) carouselNav(this, btn.classList.contains('carousel-next') ? 1 : -1);
+        });
+
         // Keyboard shortcuts for flyover
         document.addEventListener('keydown', function (e) {
             if (document.getElementById('flyover-view').style.display === 'none') return;
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+            // If hovering flyover carousel, arrow keys cycle photos
+            if (foCarouselHovered && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+                var photos = JSON.parse(foCarouselEl.dataset.photos);
+                if (photos.length > 1) {
+                    e.preventDefault();
+                    carouselNav(foCarouselEl, e.key === 'ArrowRight' ? 1 : -1);
+                    return;
+                }
+            }
+
             switch (e.code) {
                 case 'Space':
                     e.preventDefault();
