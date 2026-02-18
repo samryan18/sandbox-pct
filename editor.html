@@ -171,7 +171,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <div class="shortcuts">
     <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> Previous / Next day &nbsp;&middot;&nbsp;
     <kbd>Ctrl+S</kbd> Save progress &nbsp;&middot;&nbsp;
-    Click a photo to make it primary &nbsp;&middot;&nbsp; Drag to reorder
+    "Set primary" to choose hero photo &nbsp;&middot;&nbsp; Drag to reorder
 </div>
 
 <script src="data.js"></script>
@@ -330,7 +330,7 @@ function changePhotoDate(fromIdx, photoIdx, newDate) {
         });
         var choice = prompt(msg + '\nEnter number:');
         if (!choice) return;
-        var pick = parseInt(choice) - 1;
+        var pick = parseInt(choice, 10) - 1;
         if (pick >= 0 && pick < targets.length) {
             doMovePhoto(fromIdx, photoIdx, targets[pick]);
         }
@@ -404,7 +404,7 @@ function renderDay(idx) {
             '</div>' +
             '<div class="field">' +
                 '<label>Title</label>' +
-                '<input type="text" id="edit-name" value="' + e.name.replace(/"/g, '&quot;') + '">' +
+                '<input type="text" id="edit-name" value="' + escapeHTML(e.name).replace(/"/g, '&quot;') + '">' +
             '</div>' +
             '<div class="field">' +
                 '<label>Journal Entry</label>' +
@@ -465,7 +465,7 @@ function makePrimary(dayIdx, photoIdx) {
 
 function deletePhoto(dayIdx, photoIdx) {
     var photos = edits[dayIdx].photos;
-    if (photos.length <= 1) return; // don't delete the last photo
+    if (photos.length <= 1) { showToast("Can't delete the last photo"); return; }
     var removed = photos.splice(photoIdx, 1)[0];
     // If we deleted the primary, new primary is first remaining
     if (edits[dayIdx].primaryPhoto === removed) {
@@ -509,8 +509,7 @@ function setupDragDrop(dayIdx) {
             var photos = edits[dayIdx].photos;
             var moved = photos.splice(dragSrcIdx, 1)[0];
             photos.splice(destIdx, 0, moved);
-            // Update primary to whatever is first
-            edits[dayIdx].primaryPhoto = photos[0];
+            // Preserve user's primary choice (don't auto-set to first)
             markChanged(dayIdx);
             renderDay(dayIdx);
         });

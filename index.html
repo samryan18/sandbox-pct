@@ -665,7 +665,6 @@
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             backdrop-filter: blur(8px);
             opacity: 0;
-            transform: translateX(20px);
             transition: opacity 0.5s, transform 0.5s;
         }
 
@@ -1242,6 +1241,7 @@
         // Shared carousel navigation
         function carouselNav(carousel, dir) {
             var photos = JSON.parse(carousel.dataset.photos);
+            if (photos.length <= 1) return;
             var idx = parseInt(carousel.dataset.idx) + dir;
             if (idx < 0) idx = photos.length - 1;
             if (idx >= photos.length) idx = 0;
@@ -2295,13 +2295,13 @@
                 if (stCurrentDay >= 0 && foDayBoundaries.length > 0) {
                     var targetPtIdx = foDayBoundaries[Math.min(stCurrentDay, foDayBoundaries.length - 1)].pointIndex;
                     var fraction = targetPtIdx / (foAllPoints.length - 1);
-                    (function trySeek() {
+                    (function trySeek(attempts) {
                         if (window.foSeekTo) {
                             window.foSeekTo(Math.max(0, Math.min(1, fraction)));
-                        } else {
-                            setTimeout(trySeek, 100);
+                        } else if (attempts < 20) {
+                            setTimeout(function() { trySeek(attempts + 1); }, 100);
                         }
-                    })();
+                    })(0);
                 }
             } else {
                 // Capture flyover position before hiding
